@@ -1,5 +1,5 @@
-import { GetServerSideProps } from "next";
-import styles from "../styles/components.module.css";
+import { GetServerSideProps } from 'next';
+import styles from '../styles/components.module.css';
 
 type User = {
   id: number;
@@ -21,6 +21,45 @@ const Home = ({ users }: Props) => {
             {user.name} ({user.email})
           </li>
         ))}
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+        <p>건강한 흐름, 가벼운 삶</p>
+
         <button className={styles.btn}>확인</button>
       </ul>
     </div>
@@ -28,7 +67,7 @@ const Home = ({ users }: Props) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const res = await fetch("http://localhost:3000/api/user");
+  const res = await fetch('http://localhost:3000/api/user');
   const users = await res.json();
 
   return {

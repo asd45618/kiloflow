@@ -1,5 +1,7 @@
 'use client';
 
+import { faBookmark, faCommentDots } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
 import styled from 'styled-components';
 
@@ -15,8 +17,14 @@ const HeaderBlock = styled.div`
   }
   .link {
     a {
+      font-size: 24px;
       &:first-child {
-        margin-right: 10px;
+        margin-right: 15px;
+      }
+      &:last-child {
+        svg {
+          transform: scale(-1, 1);
+        }
       }
     }
   }
@@ -29,8 +37,12 @@ export default function Header() {
         <img src='../../kiloflow1.png' alt='logo' />
       </Link>
       <div className='link'>
-        <Link href=''>스크랩</Link>
-        <Link href=''>채팅</Link>
+        <Link href=''>
+          <FontAwesomeIcon icon={faBookmark} />
+        </Link>
+        <Link href=''>
+          <FontAwesomeIcon icon={faCommentDots} />
+        </Link>
       </div>
     </HeaderBlock>
   );

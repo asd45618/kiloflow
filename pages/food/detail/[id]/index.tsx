@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import styles from '../../../../styles/foodDetail.module.css';
+import styles from './foodDetail.module.css';
 import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
 
 export default function foodDetail() {

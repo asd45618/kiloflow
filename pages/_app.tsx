@@ -11,6 +11,7 @@ import { useMediaQuery } from 'react-responsive';
 import styles from '../styles/components.module.css';
 import { useEffect, useState } from 'react';
 import Main from '@/components/main/Main';
+import Link from 'next/link';
 
 const LayoutWrapper = styled.div`
   display: flex;
@@ -139,9 +140,9 @@ export default function App({ Component, pageProps }: AppProps) {
             <div className='abocado'>
               <img src='../../abocado.png' alt='아보카도' />
             </div>
-            <div className='logo'>
+            <Link href='/' className='logo'>
               <img src='../../kiloflow1.png' alt='로고' />
-            </div>
+            </Link>
             <p>건강한 흐름, 가벼운 삶</p>
           </div>
         </LeftLayout>

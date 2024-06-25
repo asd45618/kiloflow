@@ -14,7 +14,7 @@ type Props = {
 const Home = ({ users }: Props) => {
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-4">Users List</h1>
+      <h1 className='text-3xl font-bold mb-4'>Users List</h1>
       <ul>
         {users?.map((user) => (
           <li key={user.email}>

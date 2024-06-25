@@ -1,0 +1,81 @@
+.modify__wrapper {
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.modify__wrapper p {
+  margin-bottom: 3px;
+}
+
+.modify__wrapper input {
+  border: 1px solid #8b8b8b;
+  border-radius: 5px;
+}
+
+.modify__title {
+  margin: 30px 0;
+}
+
+.modify__title input {
+  width: 100%;
+}
+
+.modify__img {
+  margin-bottom: 20px;
+}
+
+.modify__img span {
+  margin-right: 15px;
+}
+
+.modify__img input {
+  border: none;
+}
+
+.modify__info {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.modify__info input {
+  width: 80px;
+}
+
+.modify__info div:nth-child(1) {
+  flex: 0 0 33%;
+  margin-bottom: 15px;
+}
+
+.modify__info div:nth-child(2) {
+  flex: 0 0 33%;
+}
+
+.modify__info div:nth-child(3) {
+  flex: 0 0 33%;
+}
+
+.modify__info div:nth-child(4) {
+  flex: 0 0 33%;
+}
+
+.modify__btn {
+  display: flex;
+  justify-content: center;
+}
+
+.modify__btn button {
+  border: 1px solid #000;
+  padding: 1px 20px;
+  margin-top: 20px;
+  border-radius: 5px;
+}
+
+.modify__btn button:first-child {
+  border-color: red;
+  margin-right: 20px;
+}
+
+.modify__btn button:last-child {
+  border-color: green;
+}

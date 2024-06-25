@@ -1,0 +1,43 @@
+.detail__wrapper {
+  text-align: center;
+}
+
+.detail__wrapper h1 {
+  margin: 25px 0;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.detail__img {
+  display: flex;
+  justify-content: center;
+  height: 200px;
+  margin-bottom: 25px;
+}
+
+.detail__info p {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 30px 0;
+}
+
+.detail__plus svg {
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.detail__btn button {
+  border: 1px solid #000;
+  padding: 1px 20px;
+  margin-top: 20px;
+  border-radius: 5px;
+}
+
+.detail__btn button:first-child {
+  border-color: green;
+  margin-right: 20px;
+}
+
+.detail__btn button:last-child {
+  border-color: red;
+}

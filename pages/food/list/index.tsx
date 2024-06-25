@@ -29,6 +29,12 @@ const FoodListBlock = styled.div`
       }
       .list__info {
         flex: 0 0 60%;
+        .user__regi {
+          border: 1px solid #000;
+          border-radius: 10px;
+          padding: 1px 7px;
+          margin-right: 3px;
+        }
       }
       .detail__btn {
         display: flex;
@@ -68,7 +74,8 @@ export default function foodList() {
             <img src='../../foodListImg.png' alt='' />
           </div>
           <div className='list__info'>
-            <p>만두</p>
+            <span className='user__regi'>유저등록</span>
+            <span>만두</span>
             <p>단: 20 탄: 20 지: 20</p>
             <p>열량: 600kcal</p>
           </div>

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import '../styles/globals.css'; // Tailwind CSS 적용
-import type { AppProps } from 'next/app';
-import Head from 'next/head';
-import Header from '@/components/Layout/Header';
+import "../styles/globals.css"; // Tailwind CSS 적용
+import type { AppProps } from "next/app";
+import Head from "next/head";
+import Header from "@/components/Layout/Header";
 // import Footer from '@/components/Layout/Footer';
-import { usePathname } from 'next/navigation';
-import styled from 'styled-components';
-import { useMediaQuery } from 'react-responsive';
-import styles from '../styles/components.module.css';
-import { useEffect, useState } from 'react';
-import Main from '@/components/main/Main';
-import Link from 'next/link';
+import { usePathname } from "next/navigation";
+import styled from "styled-components";
+import { useMediaQuery } from "react-responsive";
+import styles from "../styles/components.module.css";
+import { useEffect, useState } from "react";
+import Main from "@/components/main/Main";
+import Link from "next/link";
 
 const LayoutWrapper = styled.div`
   display: flex;
@@ -19,7 +19,7 @@ const LayoutWrapper = styled.div`
   justify-content: center;
   align-items: center;
   background-color: #f2f2f2;
-  background-image: url('../../fullbg2.png');
+  background-image: url("../../fullbg2.png");
   background-repeat: no-repeat;
   background-size: cover;
 
@@ -96,7 +96,7 @@ const RightLayout = styled.div`
   flex: 1;
   max-width: 434px;
   height: 756px;
-  background-color: #fff;
+  background-color: #fcefef;
   padding: 20px;
   overflow-y: scroll;
   &::-webkit-scrollbar {
@@ -122,15 +122,15 @@ const RightLayout = styled.div`
 `;
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [mainWait, setMainWait] = useState(true);
+  const [mainWait, setMainWait] = useState(false);
   const path = usePathname();
-  const mobile = useMediaQuery({ query: '(max-width: 1140px)' });
+  const mobile = useMediaQuery({ query: "(max-width: 1140px)" });
 
-  useEffect(() => {
-    setTimeout(() => {
-      setMainWait(false);
-    }, 500);
-  }, []);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     setMainWait(false);
+  //   }, 500);
+  // }, []);
 
   return (
     <LayoutWrapper>
@@ -159,7 +159,7 @@ export default function App({ Component, pageProps }: AppProps) {
               {/* Other meta tags */}
             </Head>
             <div>
-              {path === '/auth/join' || path === '/auth/login' ? (
+              {path === "/auth/join" || path === "/auth/login" ? (
                 <Component {...pageProps} />
               ) : (
                 <>

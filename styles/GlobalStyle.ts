@@ -1,5 +1,5 @@
 // styles/GlobalStyle.ts
-import { createGlobalStyle } from 'styled-components';
+import { createGlobalStyle } from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
   body {

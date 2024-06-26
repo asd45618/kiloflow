@@ -1,5 +1,5 @@
-import { GetServerSideProps } from 'next';
-import styles from '../styles/components.module.css';
+import { GetServerSideProps } from "next";
+import styles from "../styles/components.module.css";
 
 type User = {
   id: number;
@@ -14,13 +14,13 @@ type Props = {
 const Home = ({ users }: Props) => {
   return (
     <div>
-      <h1 className='text-3xl font-bold mb-4'>Users List</h1>
+      <h1 className="text-3xl font-bold mb-4">Users List</h1>
       <ul>
-        {users?.map((user) => (
+        {/* {users?.map((user) => (
           <li key={user.email}>
             {user.name} ({user.email})
           </li>
-        ))}
+        ))} */}
         <p>건강한 흐름, 가벼운 삶</p>
         <p>건강한 흐름, 가벼운 삶</p>
         <p>건강한 흐름, 가벼운 삶</p>
@@ -67,7 +67,7 @@ const Home = ({ users }: Props) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const res = await fetch('http://localhost:3000/api/user');
+  const res = await fetch("http://localhost:3000/api/user");
   const users = await res.json();
 
   return {

@@ -1,9 +1,9 @@
-import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
-import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import styled from 'styled-components';
+import { faSquarePlus } from "@fortawesome/free-regular-svg-icons";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import styled from "styled-components";
 
-const FoodListBlock = styled.div`
+const FoodListWrapper = styled.div`
   .search {
     text-align: center;
     margin: 20px 0;
@@ -50,7 +50,7 @@ const FoodListBlock = styled.div`
 
 export default function foodList() {
   return (
-    <FoodListBlock>
+    <FoodListWrapper>
       <div className='search'>
         <input type='text' />
         <FontAwesomeIcon icon={faMagnifyingGlass} />
@@ -123,6 +123,6 @@ export default function foodList() {
           </div>
         </li>
       </ul>
-    </FoodListBlock>
+    </FoodListWrapper>
   );
 }

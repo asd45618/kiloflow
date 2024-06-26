@@ -4,11 +4,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 
 const ExerciseListWrapper = styled.div`
-  h1 {
+  /* h1 {
     text-align: center;
     font-size: 32px;
     font-weight: bold;
-  }
+  } */
   .search {
     text-align: center;
     margin: 20px 0;
@@ -58,7 +58,7 @@ const ExerciseListWrapper = styled.div`
 export default function exerciseList() {
   return (
     <ExerciseListWrapper>
-      <h1>운동</h1>
+      {/* <h1>운동</h1> */}
       <div className='search'>
         <input type='text' />
         <FontAwesomeIcon icon={faMagnifyingGlass} />

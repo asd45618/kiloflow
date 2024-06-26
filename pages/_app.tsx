@@ -12,6 +12,7 @@ import styles from "../styles/components.module.css";
 import { useEffect, useState } from "react";
 import Main from "@/components/main/Main";
 import Link from "next/link";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const LayoutWrapper = styled.div`
   display: flex;
@@ -99,6 +100,9 @@ const RightLayout = styled.div`
   background-color: #fcefef;
   padding: 20px;
   overflow-y: scroll;
+  p {
+    margin-bottom: 0;
+  }
   &::-webkit-scrollbar {
     width: 3px;
   }
@@ -122,15 +126,15 @@ const RightLayout = styled.div`
 `;
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [mainWait, setMainWait] = useState(false);
+  const [mainWait, setMainWait] = useState(true);
   const path = usePathname();
   const mobile = useMediaQuery({ query: "(max-width: 1140px)" });
 
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setMainWait(false);
-  //   }, 500);
-  // }, []);
+  useEffect(() => {
+    setTimeout(() => {
+      setMainWait(false);
+    }, 500);
+  }, []);
 
   return (
     <LayoutWrapper>

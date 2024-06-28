@@ -2,6 +2,7 @@ import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 import Dropdown from "react-bootstrap/Dropdown";
+import Search from "../../../components/search/Search";
 
 const CommunityListWrapper = styled.div`
   .search {
@@ -127,6 +128,7 @@ export default function communityList() {
           </div>
         </div>
       </div>
+      {/* <Search /> */}
     </CommunityListWrapper>
   );
 }

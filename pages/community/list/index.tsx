@@ -3,8 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 import Dropdown from "react-bootstrap/Dropdown";
 import Search from "../../../components/search/Search";
+import Modal from "../../../components/communityModal/communityModal";
 
 const CommunityListWrapper = styled.div`
+  position: relative;
   .search {
     display: flex;
     align-items: center;
@@ -129,6 +131,7 @@ export default function communityList() {
         </div>
       </div>
       {/* <Search /> */}
+      <Modal />
     </CommunityListWrapper>
   );
 }

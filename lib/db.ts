@@ -1,10 +1,10 @@
 import mariadb from "mariadb";
 
 const pool = mariadb.createPool({
-  host: "192.168.100.146",
+  host: "localhost",
   user: "root",
   password: "1234",
-  database: "picshare",
+  database: "kiloflow",
   connectionLimit: 10,
 });
 

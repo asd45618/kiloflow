@@ -126,15 +126,15 @@ const RightLayout = styled.div`
 `;
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [mainWait, setMainWait] = useState(true);
+  const [mainWait, setMainWait] = useState(false);
   const path = usePathname();
   const mobile = useMediaQuery({ query: "(max-width: 1140px)" });
 
-  useEffect(() => {
-    setTimeout(() => {
-      setMainWait(false);
-    }, 500);
-  }, []);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     setMainWait(false);
+  //   }, 500);
+  // }, []);
 
   return (
     <LayoutWrapper>

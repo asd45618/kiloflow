@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import Main from "@/components/main/Main";
 import Link from "next/link";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Footer from "@/components/Layout/Footer";
 
 const LayoutWrapper = styled.div`
   display: flex;
@@ -169,7 +170,9 @@ export default function App({ Component, pageProps }: AppProps) {
                 <>
                   <Header />
                   <Component {...pageProps} />
-                  {/* <Footer /> */}
+                  <div>
+                    <Footer />
+                  </div>
                 </>
               )}
             </div>

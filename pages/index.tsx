@@ -14,7 +14,7 @@ type Props = {
 const Home = ({ users }: Props) => {
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-4">Users List</h1>
+      <h1 className='text-3xl font-bold mb-4'>Users List</h1>
       <ul>
         {/* {users?.map((user) => (
           <li key={user.email}>
@@ -66,15 +66,15 @@ const Home = ({ users }: Props) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  const res = await fetch("http://localhost:3000/api/user");
-  const users = await res.json();
+// export const getServerSideProps: GetServerSideProps = async () => {
+//   const res = await fetch("http://localhost:3000/api/user");
+//   const users = await res.json();
 
-  return {
-    props: {
-      users,
-    },
-  };
-};
+//   return {
+//     props: {
+//       users,
+//     },
+//   };
+// };
 
 export default Home;

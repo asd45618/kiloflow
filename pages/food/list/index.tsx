@@ -10,12 +10,14 @@ const FoodListWrapper = styled.div`
     input {
       border-bottom: 1px solid #000;
       outline: none;
+      background-color: inherit;
     }
     svg {
       cursor: pointer;
     }
   }
   ul {
+    padding-left: 0;
     li {
       display: flex;
       justify-content: space-around;

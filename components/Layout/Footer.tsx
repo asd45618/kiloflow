@@ -37,6 +37,9 @@ const FooterWrapper = styled.div`
     justify-content: space-around;
     align-items: center;
     border-top: 1px solid #a1a1a1;
+    .bottom__plus {
+      cursor: pointer;
+    }
   }
   a {
     color: #000;
@@ -68,7 +71,7 @@ export default function Footer() {
         <Link href='/'>
           <FontAwesomeIcon icon={faHouse} />
         </Link>
-        <div onClick={() => setHideMenu(!hideMenu)}>
+        <div className='bottom__plus' onClick={() => setHideMenu(!hideMenu)}>
           <FontAwesomeIcon icon={faCirclePlus} />
         </div>
         <Link href=''>

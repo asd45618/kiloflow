@@ -1,36 +1,7 @@
+// pages/api/auth/complete-initial-setting.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 import jwt from "jsonwebtoken";
-
-const calculateBMR = (weight: number, height: number): number => {
-  return 88.362 + 13.397 * weight + 4.799 * height - 5.677 * 30; // 30은 평균 나이
-};
-
-const calculateDailyCalories = (
-  weight: number,
-  targetWeight: number,
-  difficulty: string,
-  bmr: number
-): { dailyCalories: number; totalDays: number } => {
-  const weightToLose = weight - targetWeight;
-  const caloriesToLoseWeight = weightToLose * 9000;
-  let daysToLoseWeight: number;
-
-  if (difficulty === "쉬움") {
-    daysToLoseWeight = weightToLose * 60; // 2달
-  } else if (difficulty === "중간") {
-    daysToLoseWeight = weightToLose * 30; // 1달
-  } else if (difficulty === "어려움") {
-    daysToLoseWeight = weightToLose * 15; // 15일
-  } else {
-    throw new Error("Invalid difficulty level");
-  }
-
-  const dailyCaloricDeficit = caloriesToLoseWeight / daysToLoseWeight;
-  const dailyCalories = Math.round(bmr - dailyCaloricDeficit);
-
-  return { dailyCalories, totalDays: daysToLoseWeight };
-};
 
 export default async function handler(
   req: NextApiRequest,
@@ -47,15 +18,14 @@ export default async function handler(
 
   try {
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET || "secret");
-    const { height, weight, targetWeight, difficulty } = req.body;
-
-    const bmr = calculateBMR(weight, height);
-    const { dailyCalories, totalDays } = calculateDailyCalories(
+    const {
+      height,
       weight,
       targetWeight,
       difficulty,
-      bmr
-    );
+      dailyCalories,
+      totalDays,
+    } = req.body;
 
     await prisma.userProfile.create({
       data: {
@@ -73,11 +43,11 @@ export default async function handler(
       data: { isInitialSetupComplete: true },
     });
 
-    return res
-      .status(200)
-      .json({ message: "Initial setup complete", dailyCalories, totalDays });
+    return res.status(200).json({ message: "Initial setup complete" });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.log("서버에러", error);
+    return res.json({ error });
+
+    // return res.status(500).json({ message: "Internal server error" });
   }
 }

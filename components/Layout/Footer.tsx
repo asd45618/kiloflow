@@ -56,25 +56,25 @@ export default function Footer() {
   return (
     <FooterWrapper>
       {hideMenu ? (
-        <div className='footer__top'>
-          <Link href='/food/list'>
+        <div className="footer__top">
+          <Link href="/food/list">
             <FontAwesomeIcon icon={faUtensils} />
           </Link>
-          <Link href='/exercise/list'>
+          <Link href="/exercise/list">
             <FontAwesomeIcon icon={faDumbbell} />
           </Link>
         </div>
       ) : (
         ""
       )}
-      <div className='footer__bottom'>
-        <Link href='/'>
+      <div className="footer__bottom">
+        <Link href="/">
           <FontAwesomeIcon icon={faHouse} />
         </Link>
-        <div className='bottom__plus' onClick={() => setHideMenu(!hideMenu)}>
+        <div className="bottom__plus" onClick={() => setHideMenu(!hideMenu)}>
           <FontAwesomeIcon icon={faCirclePlus} />
         </div>
-        <Link href=''>
+        <Link href="">
           <FontAwesomeIcon icon={faUser} />
         </Link>
       </div>

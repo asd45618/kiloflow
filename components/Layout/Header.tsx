@@ -1,9 +1,11 @@
-'use client';
+"use client";
 
-import { faBookmark, faCommentDots } from '@fortawesome/free-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Link from 'next/link';
-import styled from 'styled-components';
+import { faBookmark, faCommentDots } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Link from "next/link";
+import styled from "styled-components";
+import Image from "next/image";
+import logo from "../../public/kiloflow1.png";
 
 const HeaderBlock = styled.div`
   display: flex;
@@ -33,14 +35,14 @@ const HeaderBlock = styled.div`
 export default function Header() {
   return (
     <HeaderBlock>
-      <Link href='/' className='header__image'>
-        <img src='../../kiloflow1.png' alt='logo' />
+      <Link href="/" className="header__image">
+        <Image src={logo} alt="logo" />
       </Link>
-      <div className='link'>
-        <Link href=''>
+      <div className="link">
+        <Link href="">
           <FontAwesomeIcon icon={faBookmark} />
         </Link>
-        <Link href=''>
+        <Link href="">
           <FontAwesomeIcon icon={faCommentDots} />
         </Link>
       </div>

@@ -30,6 +30,7 @@
     "react": "^18",
     "react-bootstrap": "^2.10.3",
     "react-dom": "^18",
+    "react-icons": "^5.2.1",
     "react-modal": "^3.16.1",
     "react-numeric-input": "^2.2.3",
     "react-responsive": "^10.0.0",

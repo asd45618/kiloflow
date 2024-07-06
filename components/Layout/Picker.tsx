@@ -1,4 +1,3 @@
-// components/Layout/Picker.tsx
 import React, { useState } from "react";
 import NumericInput from "react-numeric-input";
 import styles from "../../styles/picker.module.css";
@@ -32,17 +31,23 @@ const Picker: React.FC<PickerProps> = ({
 
   return (
     <div className={styles.picker}>
-      <label>{label}</label>
-      <NumericInput
-        value={tempValue}
-        onChange={handleChange}
-        min={min}
-        max={max}
-        className={styles.numberPicker}
-      />
-      <button onClick={handleConfirm} className={styles.confirmButton}>
-        확인
-      </button>
+      <div className={styles.numericInputWrap}>
+        <div className={styles.label}>
+          <label>{label}</label>
+        </div>
+        <div className={styles.inputGroup}>
+          <NumericInput
+            value={tempValue}
+            onChange={handleChange}
+            min={min}
+            max={max}
+            className={styles.numberPicker}
+          />
+          <button onClick={handleConfirm} className={styles.confirmButton}>
+            전송
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,18 +1,49 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import styles from "../../styles/initialSetting.module.css";
+import Picker from "../../components/Layout/Picker";
 
 type Message = {
   type: "bot" | "user";
   text: string;
 };
 
+const calculateBMR = (weight: number, height: number): number => {
+  return 88.362 + 13.397 * weight + 4.799 * height - 5.677 * 30; // 30은 평균 나이
+};
+
+const calculateDailyCalories = (
+  weight: number,
+  targetWeight: number,
+  difficulty: string,
+  bmr: number
+): { dailyCalories: number; totalDays: number } => {
+  const weightToLose = weight - targetWeight;
+  const caloriesToLoseWeight = weightToLose * 9000;
+  let daysToLoseWeight: number;
+
+  if (difficulty === "쉬움") {
+    daysToLoseWeight = weightToLose * 60; // 2달
+  } else if (difficulty === "중간") {
+    daysToLoseWeight = weightToLose * 30; // 1달
+  } else if (difficulty === "어려움") {
+    daysToLoseWeight = weightToLose * 15; // 15일
+  } else {
+    throw new Error("Invalid difficulty level");
+  }
+
+  const dailyCaloricDeficit = caloriesToLoseWeight / daysToLoseWeight;
+  const dailyCalories = Math.round(bmr - dailyCaloricDeficit);
+
+  return { dailyCalories, totalDays: daysToLoseWeight };
+};
+
 export default function InitialSetting() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [height, setHeight] = useState("");
-  const [weight, setWeight] = useState("");
-  const [targetWeight, setTargetWeight] = useState("");
+  const [height, setHeight] = useState(160);
+  const [weight, setWeight] = useState(60);
+  const [targetWeight, setTargetWeight] = useState(60);
   const [difficulty, setDifficulty] = useState("");
   const [dailyCalories, setDailyCalories] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -60,25 +91,16 @@ export default function InitialSetting() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          height: parseFloat(height),
-          weight: parseFloat(weight),
-          targetWeight: parseFloat(targetWeight),
+          height: height,
+          weight: weight,
+          targetWeight: targetWeight,
           difficulty,
+          dailyCalories,
+          totalDays,
         }),
       });
       if (res.ok) {
-        const data = await res.json();
-        setDailyCalories(data.dailyCalories);
-        setTotalDays(data.totalDays);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            type: "bot",
-            text: `너의 하루 권장 섭취 칼로리는 ${data.dailyCalories} kcal이야!`,
-          },
-          { type: "bot", text: `총 감량 기간은 ${data.totalDays}일이야!` },
-          { type: "bot", text: `그럼 초기 설정을 끝낼까?` },
-        ]);
+        router.push("/");
       } else {
         setError("초기 설정 완료에 실패했습니다.");
       }
@@ -92,9 +114,9 @@ export default function InitialSetting() {
 
   const handleRestart = () => {
     setStep(1);
-    setHeight("");
-    setWeight("");
-    setTargetWeight("");
+    setHeight(160);
+    setWeight(60);
+    setTargetWeight(60);
     setDifficulty("");
     setDailyCalories(null);
     setTotalDays(null);
@@ -107,12 +129,32 @@ export default function InitialSetting() {
       { type: "user", text: userInput },
     ]);
 
-    if (step === 1) setHeight(userInput);
-    if (step === 2) setWeight(userInput);
-    if (step === 3) setTargetWeight(userInput);
-    if (step === 4) setDifficulty(userInput);
-
-    setStep((prevStep) => prevStep + 1);
+    if (step === 1) setHeight(parseInt(userInput));
+    if (step === 2) setWeight(parseInt(userInput));
+    if (step === 3) setTargetWeight(parseInt(userInput));
+    if (step === 4) {
+      setDifficulty(userInput);
+      const bmr = calculateBMR(weight, height);
+      const { dailyCalories, totalDays } = calculateDailyCalories(
+        weight,
+        targetWeight,
+        userInput,
+        bmr
+      );
+      setDailyCalories(dailyCalories);
+      setTotalDays(totalDays);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          type: "bot",
+          text: `너의 하루 권장 섭취 칼로리는 ${dailyCalories} kcal이야!`,
+        },
+        { type: "bot", text: `총 감량 기간은 ${totalDays}일이야!` },
+        { type: "bot", text: "그럼 초기 설정을 끝낼까?" },
+      ]);
+    } else {
+      setStep((prevStep) => prevStep + 1);
+    }
     setInputValue("");
   };
 
@@ -134,6 +176,22 @@ export default function InitialSetting() {
     if (event.key === "Enter") {
       handleSend();
     }
+  };
+
+  const renderOptions = (options: string[]) => {
+    return (
+      <div className={styles.optionsContainer}>
+        {options.map((option, index) => (
+          <button
+            key={index}
+            onClick={() => handleNextStep(option)}
+            className={styles.optionButton}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -163,7 +221,7 @@ export default function InitialSetting() {
       )}
       {dailyCalories !== null && (
         <div>
-          <button className={styles.button} onClick={() => router.push("/")}>
+          <button className={styles.button} onClick={completeInitialSetting}>
             응!
           </button>
           <button className={styles.button} onClick={handleRestart}>
@@ -180,21 +238,54 @@ export default function InitialSetting() {
           <button onClick={handleLogout}>로그아웃</button>
         </div>
       )}
-      {step < questions.length && step > 0 && (
-        <div className={styles.inputContainer}>
-          <input
-            type="text"
-            value={inputValue}
-            onChange={handleInput}
-            onKeyDown={handleKeyDown}
-            className={styles.input}
-            placeholder="여기에 입력하세요..."
-          />
-          <button onClick={handleSend} className={styles.sendButton}>
-            전송
-          </button>
-        </div>
+      {step === 1 && (
+        <Picker
+          label="키 (cm)"
+          min={100}
+          max={250}
+          value={height}
+          onChange={(value) => handleNextStep(value.toString())}
+        />
       )}
+      {step === 2 && (
+        <Picker
+          label="몸무게 (kg)"
+          min={30}
+          max={200}
+          value={weight}
+          onChange={(value) => handleNextStep(value.toString())}
+        />
+      )}
+      {step === 3 && (
+        <Picker
+          label="목표 몸무게 (kg)"
+          min={30}
+          max={200}
+          value={targetWeight || 0}
+          onChange={(value) => handleNextStep(value.toString())}
+        />
+      )}
+      {step === 4 && renderOptions(["쉬움", "중간", "어려움"])}
+      {step < questions.length &&
+        step > 0 &&
+        step !== 1 &&
+        step !== 2 &&
+        step !== 3 &&
+        step !== 4 && (
+          <div className={styles.inputContainer}>
+            <input
+              type="text"
+              value={inputValue}
+              onChange={handleInput}
+              onKeyDown={handleKeyDown}
+              className={styles.input}
+              placeholder="여기에 입력하세요..."
+            />
+            <button onClick={handleSend} className={styles.sendButton}>
+              전송
+            </button>
+          </div>
+        )}
       <button className={styles.button} onClick={() => setShowWarning(true)}>
         초기 설정 나가기
       </button>

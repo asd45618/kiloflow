@@ -5,7 +5,9 @@ import Modal from "react-modal";
 import Image from "next/image";
 import classnames from "classnames";
 import styles from "../../../styles/components.module.css";
+import modalStyles from "../../../styles/profileModal.module.css";
 import styled from "styled-components";
+
 import minion1 from "../../../public/minion1.png";
 import minion2 from "../../../public/minion2.png";
 import minion3 from "../../../public/minion3.png";
@@ -20,6 +22,7 @@ import minion11 from "../../../public/minion11.png";
 import logo from "../../../public/kiloflow1.png";
 
 const JoinBlock = styled.div`
+  position: relative;
   max-width: 345px;
   margin: 50px auto;
   text-align: center;
@@ -38,7 +41,7 @@ const JoinBlock = styled.div`
       position: relative;
       .image {
         display: inline-block;
-        background-color: #cedecf;
+        background-color: ${(props) => props.color};
         border-radius: 50%;
         width: 150px;
         height: 150px;
@@ -51,30 +54,26 @@ const JoinBlock = styled.div`
     }
   }
   .buttonContainer {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
     position: absolute;
-    top: 10px; /* Adjust the top position as needed */
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 10;
-  }
-
-  .uploadLabel {
-    cursor: pointer;
-  }
-
-  .imageGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-    gap: 10px;
-  }
-
-  .imageItem {
-    cursor: pointer;
+    .upload__label {
+      padding: 10px 15px;
+      background-color: #6e9c6f99;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      &:hover {
+        background-color: #6e9c6f;
+      }
+    }
   }
 `;
 
@@ -91,6 +90,12 @@ const minionImages = [
   minion10,
   minion11,
 ];
+
+const getRandomPastelColor = () => {
+  const hue = Math.floor(Math.random() * 360);
+  const pastel = `hsl(${hue}, 100%, 85%)`;
+  return pastel;
+};
 
 const Join = () => {
   const [email, setEmail] = useState("");
@@ -235,7 +240,7 @@ const Join = () => {
   }, [showButtons]);
 
   return (
-    <JoinBlock className={styles.container}>
+    <JoinBlock className={styles.container} color={getRandomPastelColor()}>
       <form onSubmit={handleSubmit}>
         <div className="top">
           <Image src={logo} alt="logo" />
@@ -269,12 +274,15 @@ const Join = () => {
                 />
                 {showButtons && (
                   <div className="buttonContainer">
-                    <button onClick={() => setImageSelectModalIsOpen(true)}>
+                    <button
+                      onClick={() => setImageSelectModalIsOpen(true)}
+                      className="upload__label"
+                    >
                       기본이미지 선택
                     </button>
                     <label
                       htmlFor="customProfileImage"
-                      className={styles.uploadLabel}
+                      className="upload__label"
                     >
                       나만의 프로필 이미지 선택
                     </label>
@@ -390,26 +398,32 @@ const Join = () => {
       </div>
 
       {imageSelectModalIsOpen && (
-        <Modal
-          isOpen={imageSelectModalIsOpen}
-          onRequestClose={() => setImageSelectModalIsOpen(false)}
-        >
-          <h2>기본 이미지 선택</h2>
-          <div className={styles.imageGrid}>
-            {minionImages.map((img, index) => (
-              <div key={index} className={styles.imageItem}>
-                <Image
-                  src={img}
-                  alt={`Minion ${index + 1}`}
-                  width={50}
-                  height={50}
-                  onClick={() => handleImageSelect(img.src)}
-                />
-              </div>
-            ))}
-          </div>
-          <button onClick={() => setImageSelectModalIsOpen(false)}>닫기</button>
-        </Modal>
+        <div className="modal__wrap">
+          <Modal
+            isOpen={imageSelectModalIsOpen}
+            onRequestClose={() => setImageSelectModalIsOpen(false)}
+            className={modalStyles.modal__content}
+            overlayClassName={modalStyles.modal__overlay}
+          >
+            <h2>기본 이미지 선택</h2>
+            <div className={modalStyles.image__grid}>
+              {minionImages.map((img, index) => (
+                <div key={index} className={modalStyles.image__item}>
+                  <Image
+                    src={img}
+                    alt={`Minion ${index + 1}`}
+                    width={50}
+                    height={50}
+                    onClick={() => handleImageSelect(img.src)}
+                  />
+                </div>
+              ))}
+            </div>
+            <button onClick={() => setImageSelectModalIsOpen(false)}>
+              닫기
+            </button>
+          </Modal>
+        </div>
       )}
     </JoinBlock>
   );

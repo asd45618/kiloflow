@@ -25,7 +25,7 @@
   }
 }
 
-.chatContainer {
+.chat__container {
   width: 80%;
   max-width: 600px;
   background-color: #fff;
@@ -37,7 +37,7 @@
   height: 50vh;
 }
 
-.botMessage {
+.bot__message {
   text-align: left;
   background-color: #e0e0e0;
   padding: 10px;
@@ -45,7 +45,7 @@
   margin-bottom: 10px;
 }
 
-.userMessage {
+.user__message {
   text-align: right;
   background-color: #86ad87;
   color: #fff;
@@ -54,7 +54,7 @@
   margin-bottom: 10px;
 }
 
-.optionsContainer {
+.options__container {
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -62,7 +62,7 @@
   max-width: 600px;
 }
 
-.optionButton {
+.option__button {
   width: 30%;
   padding: 10px;
   background-color: #6e9c6f;
@@ -98,8 +98,8 @@
   text-align: center;
 }
 
-.logoutButton,
-.cancelButton {
+.logout__button,
+.cancel__button {
   padding: 10px 20px;
   background-color: #6e9c6f;
   color: #fff;
@@ -109,6 +109,6 @@
   margin-top: 10px;
 }
 
-.cancelButton {
+.cancel__button {
   background-color: #ddd;
 }

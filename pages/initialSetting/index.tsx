@@ -209,12 +209,12 @@ export default function InitialSetting() {
 
   const renderOptions = (options: string[]) => {
     return (
-      <div className={styles.optionsContainer}>
+      <div className={styles.options__container}>
         {options.map((option, index) => (
           <button
             key={index}
             onClick={() => handleNextStep(option)}
-            className={styles.optionButton}
+            className={styles.option__button}
           >
             {option}
           </button>
@@ -240,24 +240,26 @@ export default function InitialSetting() {
             초기 설정을 완료하지 않으면 이 앱의 기능을 이용할 수 없습니다. 초기
             설정을 나가면 자동으로 로그아웃됩니다.
           </p>
-          <button onClick={handleLogout} className={styles.logoutButton}>
+          <button onClick={handleLogout} className={styles.logout__button}>
             확인
           </button>
           <button
             onClick={() => setShowWarning(false)}
-            className={styles.cancelButton}
+            className={styles.cancel__button}
           >
             취소
           </button>
         </div>
       )}
 
-      <div className={styles.chatContainer} ref={chatContainerRef}>
+      <div className={styles.chat__container} ref={chatContainerRef}>
         {messages.map((message, index) => (
           <div
             key={index}
             className={
-              message.type === "bot" ? styles.botMessage : styles.userMessage
+              message.type === "bot"
+                ? styles.bot__message
+                : styles.user__message
             }
           >
             {message.text}

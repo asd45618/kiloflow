@@ -33,3 +33,15 @@
 
 .button__small {
 }
+
+.message {
+  margin-top: 5px;
+}
+
+.error {
+  color: red;
+}
+
+.success {
+  color: green;
+}

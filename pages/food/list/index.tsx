@@ -1,7 +1,8 @@
-import { faSquarePlus } from "@fortawesome/free-regular-svg-icons";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import styled from "styled-components";
+import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useEffect } from 'react';
+import styled from 'styled-components';
 
 const FoodListWrapper = styled.div`
   .search {
@@ -51,6 +52,13 @@ const FoodListWrapper = styled.div`
 `;
 
 export default function foodList() {
+  // useEffect(() => {
+  //   const response = fetch(
+  //     'http://openapi.foodsafetykorea.go.kr/api/094a84826ed54a49818a'
+  //   );
+  //   console.log(response);
+  // }, []);
+
   return (
     <FoodListWrapper>
       <div className='search'>

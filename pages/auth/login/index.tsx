@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link"; // Link 컴포넌트 import
 import styles from "../../../styles/components.module.css";
 
 const Login = () => {
@@ -72,6 +73,12 @@ const Login = () => {
           로그인
         </button>
       </form>
+      <div className={styles.signupContainer}>
+        <p>계정이 없으신가요?</p>
+        <Link href="/auth/join">
+          <button className={styles.signupButton}>회원가입</button>
+        </Link>
+      </div>
     </div>
   );
 };

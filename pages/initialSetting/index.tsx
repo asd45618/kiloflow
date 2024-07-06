@@ -56,28 +56,49 @@ export default function InitialSetting() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const questions = [
-    { text: "안녕! 우리 kiloflow는 ~~이런이런 어플이야", delay: 1500 },
+    {
+      text: "안녕! 우리 kiloflow는 건강한 생활 습관을 유지하면서 체중을 관리할 수 있도록 도와주는 어플이야.",
+      delay: 1500,
+    },
+    { text: "너의 신체 정보를 입력하고 목표를 설정하면,", delay: 1500 },
+    {
+      text: "Kiloflow가 맞춤형 권장 섭취 칼로리를 제공해 줄 거야.",
+      delay: 1500,
+    },
+    {
+      text: "또한, 네가 섭취한 음식을 등록해서 그날의 섭취 칼로리를 직관적으로 볼 수 있고,",
+      delay: 1500,
+    },
+    {
+      text: "달성률을 통해 건강한 다이어트 흐름에 도움을 줄 수 있어.",
+      delay: 1500,
+    },
     { text: "그럼 너의 키를 알려줄래?", delay: 1500 },
     { text: "몸무게는?", delay: 1500 },
     { text: "목표 몸무게는?", delay: 1500 },
     {
-      text: "감량 난이도는 어떻게 하고 싶어? (쉬움, 중간, 어려움 중에 선택)",
+      text: "감량 난이도는 어떻게 하고 싶어?",
       delay: 1500,
     },
   ];
 
   useEffect(() => {
-    if (step < questions.length) {
+    if (step < questions.length && step <= 4) {
+      // Automatically move through the introduction steps
       const timer = setTimeout(() => {
         setMessages((prevMessages) => [
           ...prevMessages,
           { type: "bot", text: questions[step].text },
         ]);
-        if (step === 0) {
-          setStep((prevStep) => prevStep + 1);
-        }
+        setStep((prevStep) => prevStep + 1);
       }, questions[step].delay);
       return () => clearTimeout(timer);
+    } else if (step < questions.length) {
+      // Wait for user input in the questions steps
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { type: "bot", text: questions[step].text },
+      ]);
     }
   }, [step]);
 
@@ -138,10 +159,10 @@ export default function InitialSetting() {
       { type: "user", text: userInput },
     ]);
 
-    if (step === 1) setHeight(parseInt(userInput));
-    if (step === 2) setWeight(parseInt(userInput));
-    if (step === 3) setTargetWeight(parseInt(userInput));
-    if (step === 4) {
+    if (step === 5) setHeight(parseInt(userInput));
+    if (step === 6) setWeight(parseInt(userInput));
+    if (step === 7) setTargetWeight(parseInt(userInput));
+    if (step === 8) {
       setDifficulty(userInput);
       const bmr = calculateBMR(weight, height);
       const { dailyCalories, totalDays } = calculateDailyCalories(
@@ -161,9 +182,8 @@ export default function InitialSetting() {
         { type: "bot", text: `총 감량 기간은 ${totalDays}일이야!` },
         { type: "bot", text: "그럼 초기 설정을 끝낼까?" },
       ]);
-    } else {
-      setStep((prevStep) => prevStep + 1);
     }
+    setStep((prevStep) => prevStep + 1);
     setInputValue("");
   };
 
@@ -245,7 +265,7 @@ export default function InitialSetting() {
         ))}
       </div>
 
-      {step === 1 && (
+      {step === 5 && (
         <Picker
           label="키 (cm)"
           min={100}
@@ -254,7 +274,7 @@ export default function InitialSetting() {
           onChange={(value) => handleNextStep(value.toString())}
         />
       )}
-      {step === 2 && (
+      {step === 6 && (
         <Picker
           label="몸무게 (kg)"
           min={30}
@@ -263,7 +283,7 @@ export default function InitialSetting() {
           onChange={(value) => handleNextStep(value.toString())}
         />
       )}
-      {step === 3 && (
+      {step === 7 && (
         <Picker
           label="목표 몸무게 (kg)"
           min={30}
@@ -273,7 +293,7 @@ export default function InitialSetting() {
         />
       )}
 
-      {step === 4 &&
+      {step === 8 &&
         difficulty === "" &&
         renderOptions(["쉬움", "중간", "어려움"])}
       {dailyCalories !== null && (

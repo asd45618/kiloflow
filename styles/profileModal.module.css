@@ -1,0 +1,31 @@
+.modal__overlay {
+  z-index: 10000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal__content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  margin: auto;
+  text-align: center;
+}
+
+.image__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 10px;
+}
+
+.image__item {
+  cursor: pointer;
+}

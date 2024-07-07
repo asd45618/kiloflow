@@ -1,6 +1,41 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
+import styled from "styled-components";
 import styles from "../../../styles/components.module.css";
+import Image from "next/image";
+import logo from "../../../public/kiloflow1.png";
+
+const LoginBlock = styled.div`
+  max-width: 345px;
+  margin: 100px auto;
+  text-align: center;
+  color: gray;
+  .top {
+    margin: 20px 0;
+    div {
+      margin: 15px 0 40px;
+      white-space: nowrap;
+    }
+  }
+  table {
+    width: 100%;
+    td {
+      padding: 10px;
+      text-align: left;
+    }
+  }
+  .error {
+    color: red;
+    font-size: 0.875rem;
+    margin-top: 5px;
+  }
+  .link__join {
+    .text__color {
+      color: #6e9c6f;
+    }
+  }
+`;
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -44,35 +79,64 @@ const Login = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className="text-3xl font-bold mb-4">로그인</h1>
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.formGroup}>
-          <label htmlFor="email">Email:</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+    <LoginBlock>
+      <form onSubmit={handleSubmit}>
+        <div className="top">
+          <Image src={logo} alt="logo" />
+          <div>
+            <p>건강한 삶을 원하시나요?</p>
+            <p>로그인하여 시작하세요.</p>
+          </div>
         </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {error && <p className={styles.error}>{error}</p>}
-        <button type="submit" className={styles.btn}>
+        <table>
+          <tr>
+            <td>
+              <input
+                className={styles.input__big}
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="이메일 주소"
+                required
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input
+                className={styles.input__big}
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="비밀번호"
+                required
+              />
+            </td>
+          </tr>
+          {error && (
+            <tr>
+              <td colSpan={2}>
+                <p className="error">{error}</p>
+              </td>
+            </tr>
+          )}
+        </table>
+
+        <button className={styles.button__big} type="submit">
           로그인
         </button>
       </form>
-    </div>
+      <div className="link__join">
+        <p>
+          계정이 없으신가요?&nbsp;&nbsp;
+          <Link href="/auth/join">
+            <button className="text__color">회원가입</button>
+          </Link>
+        </p>
+      </div>
+    </LoginBlock>
   );
 };
 

@@ -3,21 +3,45 @@
 }
 
 .search {
-
 }
 
 .input__big {
-  
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 10px;
 }
 
 .input__small {
-  
 }
 
 .button__big {
-  
+  width: 95%;
+  margin: 20px 0;
+  height: 40px;
+  background: #ccc;
+  color: #fff;
+  border-radius: 10px;
+  &:hover {
+    background: gray;
+  }
+}
+
+.button__big {
 }
 
 .button__small {
-  
+}
+
+.message {
+  margin-top: 5px;
+}
+
+.error {
+  color: red;
+}
+
+.success {
+  color: green;
 }

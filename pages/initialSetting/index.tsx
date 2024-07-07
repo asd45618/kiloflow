@@ -1,7 +1,8 @@
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "../../styles/initialSetting.module.css";
 import Picker from "../../components/Layout/Picker";
+import { IoIosArrowBack } from "react-icons/io";
 
 type Message = {
   type: "bot" | "user";
@@ -52,32 +53,61 @@ export default function InitialSetting() {
   const [totalDays, setTotalDays] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const questions = [
-    { text: "안녕! 우리 kiloflow는 ~~이런이런 어플이야", delay: 1500 },
+    {
+      text: "안녕! 우리 kiloflow는 건강한 생활 습관을 유지하면서 체중을 관리할 수 있도록 도와주는 어플이야.",
+      delay: 1500,
+    },
+    { text: "너의 신체 정보를 입력하고 목표를 설정하면,", delay: 1500 },
+    {
+      text: "Kiloflow가 맞춤형 권장 섭취 칼로리를 제공해 줄 거야.",
+      delay: 1500,
+    },
+    {
+      text: "또한, 네가 섭취한 음식을 등록해서 그날의 섭취 칼로리를 직관적으로 볼 수 있고,",
+      delay: 1500,
+    },
+    {
+      text: "달성률을 통해 건강한 다이어트 흐름에 도움을 줄 수 있어.",
+      delay: 1500,
+    },
     { text: "그럼 너의 키를 알려줄래?", delay: 1500 },
     { text: "몸무게는?", delay: 1500 },
     { text: "목표 몸무게는?", delay: 1500 },
     {
-      text: "감량 난이도는 어떻게 하고 싶어? (쉬움, 중간, 어려움 중에 선택)",
+      text: "감량 난이도는 어떻게 하고 싶어?",
       delay: 1500,
     },
   ];
 
   useEffect(() => {
-    if (step < questions.length) {
+    if (step < questions.length && step <= 4) {
+      // Automatically move through the introduction steps
       const timer = setTimeout(() => {
         setMessages((prevMessages) => [
           ...prevMessages,
           { type: "bot", text: questions[step].text },
         ]);
-        if (step === 0) {
-          setStep((prevStep) => prevStep + 1);
-        }
+        setStep((prevStep) => prevStep + 1);
       }, questions[step].delay);
       return () => clearTimeout(timer);
+    } else if (step < questions.length) {
+      // Wait for user input in the questions steps
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { type: "bot", text: questions[step].text },
+      ]);
     }
   }, [step]);
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const completeInitialSetting = async () => {
     setLoading(true);
@@ -129,10 +159,10 @@ export default function InitialSetting() {
       { type: "user", text: userInput },
     ]);
 
-    if (step === 1) setHeight(parseInt(userInput));
-    if (step === 2) setWeight(parseInt(userInput));
-    if (step === 3) setTargetWeight(parseInt(userInput));
-    if (step === 4) {
+    if (step === 5) setHeight(parseInt(userInput));
+    if (step === 6) setWeight(parseInt(userInput));
+    if (step === 7) setTargetWeight(parseInt(userInput));
+    if (step === 8) {
       setDifficulty(userInput);
       const bmr = calculateBMR(weight, height);
       const { dailyCalories, totalDays } = calculateDailyCalories(
@@ -152,9 +182,8 @@ export default function InitialSetting() {
         { type: "bot", text: `총 감량 기간은 ${totalDays}일이야!` },
         { type: "bot", text: "그럼 초기 설정을 끝낼까?" },
       ]);
-    } else {
-      setStep((prevStep) => prevStep + 1);
     }
+    setStep((prevStep) => prevStep + 1);
     setInputValue("");
   };
 
@@ -180,12 +209,12 @@ export default function InitialSetting() {
 
   const renderOptions = (options: string[]) => {
     return (
-      <div className={styles.optionsContainer}>
+      <div className={styles.options__container}>
         {options.map((option, index) => (
           <button
             key={index}
             onClick={() => handleNextStep(option)}
-            className={styles.optionButton}
+            className={styles.option__button}
           >
             {option}
           </button>
@@ -196,29 +225,79 @@ export default function InitialSetting() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.chatContainer}>
+      <div className={styles.top}>
+        <button
+          className={styles.backButton}
+          onClick={() => setShowWarning(true)}
+        >
+          <IoIosArrowBack />
+        </button>
+        <h2 className={styles.h2}>프로필 초기 설정</h2>
+      </div>
+      {showWarning && (
+        <div className={styles.warning}>
+          <p>
+            초기 설정을 완료하지 않으면 이 앱의 기능을 이용할 수 없습니다. 초기
+            설정을 나가면 자동으로 로그아웃됩니다.
+          </p>
+          <button onClick={handleLogout} className={styles.logout__button}>
+            확인
+          </button>
+          <button
+            onClick={() => setShowWarning(false)}
+            className={styles.cancel__button}
+          >
+            취소
+          </button>
+        </div>
+      )}
+
+      <div className={styles.chat__container} ref={chatContainerRef}>
         {messages.map((message, index) => (
           <div
             key={index}
             className={
-              message.type === "bot" ? styles.botMessage : styles.userMessage
+              message.type === "bot"
+                ? styles.bot__message
+                : styles.user__message
             }
           >
             {message.text}
           </div>
         ))}
       </div>
-      {step === 5 && dailyCalories === null && (
-        <div>
-          <button
-            className={styles.button}
-            onClick={completeInitialSetting}
-            disabled={loading}
-          >
-            {loading ? "완료 중..." : "초기 설정 완료"}
-          </button>
-        </div>
+
+      {step === 5 && (
+        <Picker
+          label="키 (cm)"
+          min={100}
+          max={250}
+          value={height}
+          onChange={(value) => handleNextStep(value.toString())}
+        />
       )}
+      {step === 6 && (
+        <Picker
+          label="몸무게 (kg)"
+          min={30}
+          max={200}
+          value={weight}
+          onChange={(value) => handleNextStep(value.toString())}
+        />
+      )}
+      {step === 7 && (
+        <Picker
+          label="목표 몸무게 (kg)"
+          min={30}
+          max={200}
+          value={targetWeight || 0}
+          onChange={(value) => handleNextStep(value.toString())}
+        />
+      )}
+
+      {step === 8 &&
+        difficulty === "" &&
+        renderOptions(["쉬움", "중간", "어려움"])}
       {dailyCalories !== null && (
         <div>
           <button className={styles.button} onClick={completeInitialSetting}>
@@ -229,66 +308,7 @@ export default function InitialSetting() {
           </button>
         </div>
       )}
-      {showWarning && (
-        <div>
-          <p>
-            초기 설정을 완료하지 않으면 이 앱의 기능을 이용할 수 없습니다. 초기
-            설정을 나가면 자동으로 로그아웃됩니다.
-          </p>
-          <button onClick={handleLogout}>로그아웃</button>
-        </div>
-      )}
-      {step === 1 && (
-        <Picker
-          label="키 (cm)"
-          min={100}
-          max={250}
-          value={height}
-          onChange={(value) => handleNextStep(value.toString())}
-        />
-      )}
-      {step === 2 && (
-        <Picker
-          label="몸무게 (kg)"
-          min={30}
-          max={200}
-          value={weight}
-          onChange={(value) => handleNextStep(value.toString())}
-        />
-      )}
-      {step === 3 && (
-        <Picker
-          label="목표 몸무게 (kg)"
-          min={30}
-          max={200}
-          value={targetWeight || 0}
-          onChange={(value) => handleNextStep(value.toString())}
-        />
-      )}
-      {step === 4 && renderOptions(["쉬움", "중간", "어려움"])}
-      {step < questions.length &&
-        step > 0 &&
-        step !== 1 &&
-        step !== 2 &&
-        step !== 3 &&
-        step !== 4 && (
-          <div className={styles.inputContainer}>
-            <input
-              type="text"
-              value={inputValue}
-              onChange={handleInput}
-              onKeyDown={handleKeyDown}
-              className={styles.input}
-              placeholder="여기에 입력하세요..."
-            />
-            <button onClick={handleSend} className={styles.sendButton}>
-              전송
-            </button>
-          </div>
-        )}
-      <button className={styles.button} onClick={() => setShowWarning(true)}>
-        초기 설정 나가기
-      </button>
+
       {error && <p>{error}</p>}
     </div>
   );

@@ -35,3 +35,14 @@ model UserProfile {
 
   @@index([user_id])
 }
+
+model foodList {
+  id            Int      @id @default(autoincrement())
+  menu          String      
+  calorie       Int
+  carb          Int
+  pro           Int
+  fat           Int
+  img           String
+  rcp_seq       String  @unique
+}

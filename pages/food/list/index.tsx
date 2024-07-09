@@ -42,6 +42,7 @@ const FoodListWrapper = styled.div`
           border-radius: 10px;
           padding: 1px 7px;
           margin-right: 3px;
+          text-align: center;
         }
       }
       .detail__btn {
@@ -57,7 +58,7 @@ const FoodListWrapper = styled.div`
 `;
 
 interface FoodItem {
-  id: number;
+  id: string;
   name: string;
   protein: number;
   carbohydrate: number;
@@ -72,11 +73,12 @@ const FoodList: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/food/food');
+        const response = await fetch('/api/food/list');
         if (!response.ok) {
           throw new Error('데이터를 불러오는 데 실패했습니다.');
         }
         const data = await response.json();
+        console.log(data);
         setFoodList(data);
       } catch (error) {
         console.error('API 요청 에러:', error);
@@ -100,6 +102,11 @@ const FoodList: React.FC = () => {
               <img src={food.img} alt={food.name} />
             </div>
             <div className='list__info'>
+              {typeof food.id === 'string' && food.id.startsWith('RCP') ? (
+                <p className='user__regi'>유저등록</p>
+              ) : (
+                ''
+              )}
               <p>{food.name}</p>
               <p>
                 단: {food.protein}g 탄: {food.carbohydrate}g 지: {food.fat}g

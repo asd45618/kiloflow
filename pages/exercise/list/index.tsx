@@ -1,7 +1,8 @@
-import { faSquarePlus } from "@fortawesome/free-regular-svg-icons";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import styled from "styled-components";
+import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useEffect, useState } from 'react';
+import styled from 'styled-components';
 
 const ExerciseListWrapper = styled.div`
   /* h1 {
@@ -32,11 +33,11 @@ const ExerciseListWrapper = styled.div`
     border-radius: 5px;
     div {
       &:nth-child(1) {
-        flex: 0 0 40%;
+        flex: 0 0 50%;
         border-right: 1px solid black;
       }
       &:nth-child(2) {
-        flex: 0 0 40%;
+        flex: 0 0 30%;
         border-right: 1px solid black;
       }
       &:nth-child(3) {
@@ -55,7 +56,32 @@ const ExerciseListWrapper = styled.div`
   }
 `;
 
+interface ExerciseItem {
+  name: string;
+  MET: number;
+}
+
 export default function exerciseList() {
+  const [exerciseList, setExerciseList] = useState<ExerciseItem[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/exercise/list');
+        if (!response.ok) {
+          throw new Error('데이터를 불러오는 데 실패했습니다.');
+        }
+        const data = await response.json();
+        setExerciseList(data);
+      } catch (error) {
+        console.error('API 요청 에러:', error);
+        // 에러 처리 로직 추가
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <ExerciseListWrapper>
       {/* <h1>운동</h1> */}
@@ -63,62 +89,15 @@ export default function exerciseList() {
         <input type='text' />
         <FontAwesomeIcon icon={faMagnifyingGlass} />
       </div>
-      <div className='exercise__info'>
-        <div>바벨 스쿼트</div>
-        <div>6MET</div>
-        <div className='detail__btn'>
-          <FontAwesomeIcon icon={faSquarePlus} />
+      {exerciseList.map((exercise) => (
+        <div className='exercise__info' key={exercise.name}>
+          <div>{exercise.name}</div>
+          <div>{exercise.MET}MET</div>
+          <div className='detail__btn'>
+            <FontAwesomeIcon icon={faSquarePlus} />
+          </div>
         </div>
-      </div>
-      <div className='exercise__info'>
-        <div>다트</div>
-        <div>2.5MET</div>
-        <div className='detail__btn'>
-          <FontAwesomeIcon icon={faSquarePlus} />
-        </div>
-      </div>
-      <div className='exercise__info'>
-        <div>바벨 스쿼트</div>
-        <div>6MET</div>
-        <div className='detail__btn'>
-          <FontAwesomeIcon icon={faSquarePlus} />
-        </div>
-      </div>
-      <div className='exercise__info'>
-        <div>다트</div>
-        <div>2.5MET</div>
-        <div className='detail__btn'>
-          <FontAwesomeIcon icon={faSquarePlus} />
-        </div>
-      </div>
-      <div className='exercise__info'>
-        <div>바벨 스쿼트</div>
-        <div>6MET</div>
-        <div className='detail__btn'>
-          <FontAwesomeIcon icon={faSquarePlus} />
-        </div>
-      </div>
-      <div className='exercise__info'>
-        <div>다트</div>
-        <div>2.5MET</div>
-        <div className='detail__btn'>
-          <FontAwesomeIcon icon={faSquarePlus} />
-        </div>
-      </div>
-      <div className='exercise__info'>
-        <div>바벨 스쿼트</div>
-        <div>6MET</div>
-        <div className='detail__btn'>
-          <FontAwesomeIcon icon={faSquarePlus} />
-        </div>
-      </div>
-      <div className='exercise__info'>
-        <div>다트</div>
-        <div>2.5MET</div>
-        <div className='detail__btn'>
-          <FontAwesomeIcon icon={faSquarePlus} />
-        </div>
-      </div>
+      ))}
     </ExerciseListWrapper>
   );
 }

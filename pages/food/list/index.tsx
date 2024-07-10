@@ -102,7 +102,7 @@ const FoodList: React.FC = () => {
               <img src={food.img} alt={food.name} />
             </div>
             <div className='list__info'>
-              {typeof food.id === 'string' && food.id.startsWith('RCP') ? (
+              {typeof food.id === 'number' ? (
                 <p className='user__regi'>유저등록</p>
               ) : (
                 ''

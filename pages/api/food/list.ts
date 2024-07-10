@@ -38,7 +38,7 @@ export default async function handler(
       img: food.img,
     }));
 
-    const allFoodList = [...formattedFoodList, ...apiData];
+    const allFoodList = [...apiData, ...formattedFoodList];
 
     return res.status(200).json(allFoodList);
   } catch (error) {

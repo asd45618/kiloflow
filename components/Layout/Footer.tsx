@@ -4,11 +4,11 @@ import {
   faHouse,
   faUser,
   faUtensils,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import styled from "styled-components";
 
 const FooterWrapper = styled.div`
   left: 0;
@@ -60,26 +60,26 @@ export default function Footer() {
 
   return (
     <FooterWrapper>
-      <div className='footer__bottom'>
+      <div className="footer__bottom">
         {hideMenu ? (
-          <div className='footer__menu'>
-            <Link href='/food/list' onClick={() => setHideMenu(false)}>
+          <div className="footer__menu">
+            <Link href="/food/list" onClick={() => setHideMenu(false)}>
               <FontAwesomeIcon icon={faUtensils} />
             </Link>
-            <Link href='/exercise/list' onClick={() => setHideMenu(false)}>
+            <Link href="/exercise/list" onClick={() => setHideMenu(false)}>
               <FontAwesomeIcon icon={faDumbbell} />
             </Link>
           </div>
         ) : (
-          ''
+          ""
         )}
-        <Link href='/' onClick={() => setHideMenu(false)}>
+        <Link href="/" onClick={() => setHideMenu(false)}>
           <FontAwesomeIcon icon={faHouse} />
         </Link>
-        <div className='bottom__plus' onClick={() => setHideMenu(!hideMenu)}>
+        <div className="bottom__plus" onClick={() => setHideMenu(!hideMenu)}>
           <FontAwesomeIcon icon={faCirclePlus} />
         </div>
-        <Link href='' onClick={() => setHideMenu(false)}>
+        <Link href="/personal" onClick={() => setHideMenu(false)}>
           <FontAwesomeIcon icon={faUser} />
         </Link>
       </div>

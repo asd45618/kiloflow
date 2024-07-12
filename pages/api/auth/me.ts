@@ -22,7 +22,11 @@ export default async function handler(
       return res.status(404).json({ message: "User not found" });
     }
 
-    return res.status(200).json(user);
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { user_id: decoded.userId },
+    });
+
+    return res.status(200).json({ user, userProfile });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
   }

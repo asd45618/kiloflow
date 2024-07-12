@@ -8,14 +8,16 @@ datasource db {
 }
 
 model users {
-  user_id                Int          @id @default(autoincrement())
-  email                  String       @unique
+  user_id                Int              @id @default(autoincrement())
+  email                  String           @unique
   password               String
   nickname               String
-  profile_image          String       @default("default_image_url")
-  isInitialSetupComplete Boolean      @default(false)
-  created_at             DateTime     @default(now())
+  profile_image          String           @default("default_image_url")
+  isInitialSetupComplete Boolean          @default(false)
+  created_at             DateTime         @default(now())
   userProfile            UserProfile?
+
+  chatroomMembers        chatroom_members[]
 
   @@index([user_id])
 }
@@ -33,5 +35,42 @@ model UserProfile {
 
   user          users    @relation(fields: [user_id], references: [user_id])
 
+  @@index([user_id])
+}
+
+model foodList {
+  id            Int      @id @default(autoincrement())
+  menu          String      
+  calorie       Int
+  carb          Int
+  pro           Int
+  fat           Int
+  img           String
+  rcp_seq       String  @unique
+}
+
+model chatrooms {
+  id           Int               @id @default(autoincrement())
+  name         String
+  tags         String
+  image_url    String?
+  max_members  Int
+  created_at   DateTime          @default(now())
+  updated_at   DateTime          @updatedAt
+
+  chatroomMembers chatroom_members[]
+}
+
+
+model chatroom_members {
+  id          Int       @id @default(autoincrement())
+  chatroom_id Int
+  user_id     Int
+  joined_at   DateTime  @default(now())
+
+  chatroom    chatrooms @relation(fields: [chatroom_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user        users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([chatroom_id])
   @@index([user_id])
 }

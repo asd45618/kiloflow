@@ -1,24 +1,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import Modal from "react-modal";
 import Image from "next/image";
 import classnames from "classnames";
 import styles from "../../../styles/components.module.css";
-import modalStyles from "../../../styles/profileModal.module.css";
 import styled from "styled-components";
+import ProfileImageModal from "../../../components/Layout/ProfileImageModal";
 
 import minion1 from "../../../public/minion1.png";
-import minion2 from "../../../public/minion2.png";
-import minion3 from "../../../public/minion3.png";
-import minion4 from "../../../public/minion4.png";
-import minion5 from "../../../public/minion5.png";
-import minion6 from "../../../public/minion6.png";
-import minion7 from "../../../public/minion7.png";
-import minion8 from "../../../public/minion8.png";
-import minion9 from "../../../public/minion9.png";
-import minion10 from "../../../public/minion10.png";
-import minion11 from "../../../public/minion11.png";
 import logo from "../../../public/kiloflow1.png";
 
 const JoinBlock = styled.div`
@@ -35,16 +24,17 @@ const JoinBlock = styled.div`
   }
   table {
     width: 100%;
+
     td {
       padding: 10px;
       text-align: center;
       position: relative;
       .image {
         display: inline-block;
-        background-color: ${(props) => props.color};
         border-radius: 50%;
         width: 150px;
         height: 150px;
+        border: 1px solid #ddd;
       }
     }
   }
@@ -76,26 +66,6 @@ const JoinBlock = styled.div`
     }
   }
 `;
-
-const minionImages = [
-  minion1,
-  minion2,
-  minion3,
-  minion4,
-  minion5,
-  minion6,
-  minion7,
-  minion8,
-  minion9,
-  minion10,
-  minion11,
-];
-
-const getRandomPastelColor = () => {
-  const hue = Math.floor(Math.random() * 360);
-  const pastel = `hsl(${hue}, 100%, 85%)`;
-  return pastel;
-};
 
 const Join = () => {
   const [email, setEmail] = useState("");
@@ -240,7 +210,7 @@ const Join = () => {
   }, [showButtons]);
 
   return (
-    <JoinBlock className={styles.container} color={getRandomPastelColor()}>
+    <JoinBlock className={styles.container}>
       <form onSubmit={handleSubmit}>
         <div className="top">
           <Image src={logo} alt="logo" />
@@ -397,34 +367,11 @@ const Join = () => {
         </p>
       </div>
 
-      {imageSelectModalIsOpen && (
-        <div className="modal__wrap">
-          <Modal
-            isOpen={imageSelectModalIsOpen}
-            onRequestClose={() => setImageSelectModalIsOpen(false)}
-            className={modalStyles.modal__content}
-            overlayClassName={modalStyles.modal__overlay}
-          >
-            <h2>기본 이미지 선택</h2>
-            <div className={modalStyles.image__grid}>
-              {minionImages.map((img, index) => (
-                <div key={index} className={modalStyles.image__item}>
-                  <Image
-                    src={img}
-                    alt={`Minion ${index + 1}`}
-                    width={50}
-                    height={50}
-                    onClick={() => handleImageSelect(img.src)}
-                  />
-                </div>
-              ))}
-            </div>
-            <button onClick={() => setImageSelectModalIsOpen(false)}>
-              닫기
-            </button>
-          </Modal>
-        </div>
-      )}
+      <ProfileImageModal
+        isOpen={imageSelectModalIsOpen}
+        onRequestClose={() => setImageSelectModalIsOpen(false)}
+        onSelectImage={handleImageSelect}
+      />
     </JoinBlock>
   );
 };

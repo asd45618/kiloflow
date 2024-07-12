@@ -33,7 +33,7 @@ const Home = ({ users }: Props) => {
 
         if (res.ok) {
           const data = await res.json();
-          setCurrentUser(data);
+          setCurrentUser(data.user);
         } else {
           localStorage.removeItem("token");
           router.push("/auth/login");

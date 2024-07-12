@@ -23,7 +23,7 @@ export default async function handler(
       protein: api.INFO_PRO,
       carbohydrate: api.INFO_CAR,
       fat: api.INFO_FAT,
-      calorie: api.INFO_CAR,
+      calorie: api.INFO_ENG,
       img: api.ATT_FILE_NO_MAIN,
     }));
 

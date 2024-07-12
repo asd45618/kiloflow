@@ -16,10 +16,17 @@ export default async function handler(
     }
     const data = await response.json();
 
-    const apiData = data.data.map((api: any) => ({
-      MET: parseInt(api.MET계수),
-      name: api.운동명,
-    }));
+    let exId = 0;
+    const apiData = data.data.map(
+      (api: any) => (
+        exId++,
+        {
+          id: exId,
+          MET: parseInt(api.MET계수),
+          name: api.운동명,
+        }
+      )
+    );
 
     console.log(apiData);
 

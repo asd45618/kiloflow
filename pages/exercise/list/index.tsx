@@ -1,6 +1,7 @@
 import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -31,11 +32,13 @@ const ExerciseListWrapper = styled.div`
     padding: 5px 0;
     margin-bottom: 15px;
     border-radius: 5px;
+    a {
+      flex: 0 0 50%;
+      border-right: 1px solid black;
+      text-decoration: none;
+      color: black;
+    }
     div {
-      &:nth-child(1) {
-        flex: 0 0 50%;
-        border-right: 1px solid black;
-      }
       &:nth-child(2) {
         flex: 0 0 30%;
         border-right: 1px solid black;
@@ -57,11 +60,12 @@ const ExerciseListWrapper = styled.div`
 `;
 
 interface ExerciseItem {
+  id: number;
   name: string;
   MET: number;
 }
 
-export default function exerciseList() {
+export default function ExerciseList() {
   const [exerciseList, setExerciseList] = useState<ExerciseItem[]>([]);
 
   useEffect(() => {
@@ -89,9 +93,19 @@ export default function exerciseList() {
         <input type='text' />
         <FontAwesomeIcon icon={faMagnifyingGlass} />
       </div>
-      {exerciseList.map((exercise) => (
-        <div className='exercise__info' key={exercise.name}>
-          <div>{exercise.name}</div>
+      {exerciseList.map((exercise: any) => (
+        <div className='exercise__info' key={exercise.id}>
+          <Link
+            href={{
+              pathname: `/exercise/detail/${exercise.id}`,
+              query: {
+                data: JSON.stringify(exercise),
+              },
+            }}
+            as={`/exercise/detail/${exercise.id}`}
+          >
+            {exercise.name}
+          </Link>
           <div>{exercise.MET}MET</div>
           <div className='detail__btn'>
             <FontAwesomeIcon icon={faSquarePlus} />

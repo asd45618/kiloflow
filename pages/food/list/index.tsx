@@ -1,6 +1,7 @@
 import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -19,38 +20,42 @@ const FoodListWrapper = styled.div`
   }
   ul {
     padding-left: 0;
-    li {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      flex-wrap: wrap;
-      padding: 20px 0;
-      border-bottom: 1px solid #b8b8b8;
-      .list__img {
-        flex: 0 0 30%;
-        width: 90px;
-        height: 90px;
-        img {
-          width: inherit;
-          height: inherit;
-        }
-      }
-      .list__info {
-        flex: 0 0 60%;
-        .user__regi {
-          border: 1px solid #000;
-          border-radius: 10px;
-          padding: 1px 7px;
-          margin-right: 3px;
-          text-align: center;
-        }
-      }
-      .detail__btn {
+    a {
+      text-decoration: none;
+      color: black;
+      li {
         display: flex;
+        justify-content: space-around;
         align-items: center;
-        font-size: 30px;
-        svg {
-          cursor: pointer;
+        flex-wrap: wrap;
+        padding: 20px 0;
+        border-bottom: 1px solid #b8b8b8;
+        .list__img {
+          flex: 0 0 30%;
+          width: 90px;
+          height: 90px;
+          img {
+            width: inherit;
+            height: inherit;
+          }
+        }
+        .list__info {
+          flex: 0 0 60%;
+          .user__regi {
+            border: 1px solid #000;
+            border-radius: 10px;
+            padding: 1px 7px;
+            margin-right: 3px;
+            text-align: center;
+          }
+        }
+        .detail__btn {
+          display: flex;
+          align-items: center;
+          font-size: 30px;
+          svg {
+            cursor: pointer;
+          }
         }
       }
     }
@@ -97,26 +102,36 @@ const FoodList: React.FC = () => {
       </div>
       <ul>
         {foodList.map((food) => (
-          <li key={food.id}>
-            <div className='list__img'>
-              <img src={food.img} alt={food.name} />
-            </div>
-            <div className='list__info'>
-              {typeof food.id === 'number' ? (
-                <p className='user__regi'>유저등록</p>
-              ) : (
-                ''
-              )}
-              <p>{food.name}</p>
-              <p>
-                단: {food.protein}g 탄: {food.carbohydrate}g 지: {food.fat}g
-              </p>
-              <p>열량: {food.calorie}kcal</p>
-            </div>
-            <div className='detail__btn'>
-              <FontAwesomeIcon icon={faSquarePlus} />
-            </div>
-          </li>
+          <Link
+            href={{
+              pathname: `/food/detail/${food.id}`,
+              query: {
+                data: JSON.stringify(food),
+              },
+            }}
+            as={`/food/detail/${food.id}`}
+          >
+            <li key={food.id}>
+              <div className='list__img'>
+                <img src={food.img} alt={food.name} />
+              </div>
+              <div className='list__info'>
+                {typeof food.id === 'number' ? (
+                  <p className='user__regi'>유저등록</p>
+                ) : (
+                  ''
+                )}
+                <p>{food.name}</p>
+                <p>
+                  단: {food.protein}g 탄: {food.carbohydrate}g 지: {food.fat}g
+                </p>
+                <p>열량: {food.calorie}kcal</p>
+              </div>
+              <div className='detail__btn'>
+                <FontAwesomeIcon icon={faSquarePlus} />
+              </div>
+            </li>
+          </Link>
         ))}
       </ul>
     </FoodListWrapper>

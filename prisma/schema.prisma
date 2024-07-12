@@ -8,16 +8,16 @@ datasource db {
 }
 
 model users {
-  user_id                Int          @id @default(autoincrement())
-  email                  String       @unique
+  user_id                Int              @id @default(autoincrement())
+  email                  String           @unique
   password               String
   nickname               String
-  profile_image          String       @default("default_image_url")
-  isInitialSetupComplete Boolean      @default(false)
-  created_at             DateTime     @default(now())
+  profile_image          String           @default("default_image_url")
+  isInitialSetupComplete Boolean          @default(false)
+  created_at             DateTime         @default(now())
   userProfile            UserProfile?
 
-chatroomMembers        chatroom_members[]
+  chatroomMembers        chatroom_members[]
 
   @@index([user_id])
 }

@@ -28,10 +28,16 @@
   }
 }
 
-.button__big {
-}
-
 .button__small {
+  width: 25%;
+  margin: 20px 0;
+  height: 40px;
+  background: #ccc;
+  color: #fff;
+  border-radius: 10px;
+  &:hover {
+    background: gray;
+  }
 }
 
 .message {

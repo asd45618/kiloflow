@@ -67,6 +67,15 @@ interface ExerciseItem {
 
 export default function ExerciseList() {
   const [exerciseList, setExerciseList] = useState<ExerciseItem[]>([]);
+  const [keyWord, setKeyWord] = useState('');
+
+  const changeKeyWord = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setKeyWord(e.target.value);
+  };
+
+  const search = (e: React.FormEvent) => {
+    e.preventDefault();
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,7 +88,6 @@ export default function ExerciseList() {
         setExerciseList(data);
       } catch (error) {
         console.error('API 요청 에러:', error);
-        // 에러 처리 로직 추가
       }
     };
 
@@ -88,10 +96,11 @@ export default function ExerciseList() {
 
   return (
     <ExerciseListWrapper>
-      {/* <h1>운동</h1> */}
       <div className='search'>
-        <input type='text' />
-        <FontAwesomeIcon icon={faMagnifyingGlass} />
+        <form onSubmit={search}>
+          <input type='text' value={keyWord} onChange={changeKeyWord} />
+          <FontAwesomeIcon icon={faMagnifyingGlass} onClick={search} />
+        </form>
       </div>
       {exerciseList.map((exercise: any) => (
         <div className='exercise__info' key={exercise.id}>

@@ -1,11 +1,12 @@
+// pages/community/list/index.tsx
 import { useState, useEffect } from "react";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 import Dropdown from "react-bootstrap/Dropdown";
 import CommunityModal from "../../../components/community/communityModal";
-import ChatroomForm from "../../../components/community/chatroomForm";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const CommunityListWrapper = styled.div`
   position: relative;
@@ -40,6 +41,7 @@ const CommunityListWrapper = styled.div`
     .info__img {
       flex: 0 0 15%;
       margin-right: 5%;
+      position: relative;
       img {
         width: 100%;
       }
@@ -81,52 +83,51 @@ interface Chatroom {
 }
 
 const CommunityList = () => {
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [chatrooms, setChatrooms] = useState<Chatroom[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedChatroom, setSelectedChatroom] = useState<Chatroom | null>(
     null
   );
-  const [showForm, setShowForm] = useState(false);
   const [searchType, setSearchType] = useState("제목");
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const res = await fetch("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUser(data.user);
+        } else {
+          localStorage.removeItem("token");
+          router.push("/auth/login");
+        }
+      } else {
+        router.push("/auth/login");
+      }
+    };
+
+    fetchCurrentUser();
+  }, [router]);
 
   useEffect(() => {
     fetchChatrooms();
-  }, [search]);
+  }, [search, searchType]);
 
   const fetchChatrooms = async () => {
-    const res = await fetch(`/api/community?search=${search}`);
+    const res = await fetch(
+      `/api/community?search=${search}&type=${searchType}`
+    );
     const data: Chatroom[] = await res.json();
     setChatrooms(data);
-  };
-
-  const handleJoin = async (chatroom: Chatroom) => {
-    const user_id = 1; // 현재 사용자 ID (로그인 구현 필요)
-    const res = await fetch("/api/community/join", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ chatroom_id: chatroom.id, user_id }),
-    });
-
-    if (res.ok) {
-      setShowModal(false);
-      alert("채팅방에 참가하였습니다.");
-    }
-  };
-
-  const handleCreateChatroom = async (formData: FormData) => {
-    const res = await fetch("/api/community", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (res.ok) {
-      fetchChatrooms();
-      setShowForm(false);
-      alert("채팅방이 생성되었습니다.");
-    }
   };
 
   return (
@@ -163,7 +164,7 @@ const CommunityList = () => {
         >
           <div className="info__img">
             <img
-              src={chatroom.image_url || "../../communityThumb.png"}
+              src={chatroom.image_url || "/communityThumb.png"}
               alt="thumb"
             />
           </div>
@@ -181,24 +182,16 @@ const CommunityList = () => {
       {showModal && (
         <CommunityModal
           chatroom={selectedChatroom}
+          currentUser={currentUser}
           onHide={() => setShowModal(false)}
-          onJoin={handleJoin}
         />
       )}
-      <div className="create-chatroom">
-        <button onClick={() => setShowForm(true)}>채팅방 생성하기1</button>
-      </div>
+
       <Link href="/community/create">
         <div className="create-chatroom">
           <button>채팅방 생성하기</button>
         </div>
       </Link>
-      {showForm && (
-        <ChatroomForm
-          onSubmit={handleCreateChatroom}
-          onClose={() => setShowForm(false)}
-        />
-      )}
     </CommunityListWrapper>
   );
 };

@@ -18,6 +18,7 @@ model users {
   userProfile            UserProfile?
 
   chatroomMembers        chatroom_members[]
+  chatMessages           chatMessages[]
 
   @@index([user_id])
 }
@@ -59,8 +60,10 @@ model chatrooms {
   updated_at   DateTime          @updatedAt
 
   chatroomMembers chatroom_members[]
-}
+  chatMessages    chatMessages[]
 
+  @@index([id])
+}
 
 model chatroom_members {
   id          Int       @id @default(autoincrement())
@@ -70,6 +73,20 @@ model chatroom_members {
 
   chatroom    chatrooms @relation(fields: [chatroom_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   user        users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([chatroom_id])
+  @@index([user_id])
+}
+
+model chatMessages {
+  id           Int      @id @default(autoincrement())
+  chatroom_id  Int
+  user_id      Int
+  message      String
+  created_at   DateTime @default(now())
+
+  chatroom     chatrooms @relation(fields: [chatroom_id], references: [id], onDelete: Cascade)
+  user         users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@index([chatroom_id])
   @@index([user_id])

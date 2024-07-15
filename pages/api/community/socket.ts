@@ -1,11 +1,9 @@
 // pages/api/community/socket.ts
 import { Server } from "socket.io";
 import { NextApiRequest, NextApiResponse } from "next";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../../../lib/prisma";
 import { Server as HTTPServer } from "http";
 import { Socket } from "net";
-
-const prisma = new PrismaClient();
 
 interface SocketServer extends HTTPServer {
   io?: Server;

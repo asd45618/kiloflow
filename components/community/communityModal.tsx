@@ -1,4 +1,3 @@
-// components/community/communityModal.tsx
 import React from "react";
 import styled from "styled-components";
 import Button from "react-bootstrap/Button";
@@ -44,6 +43,7 @@ interface Chatroom {
   tags: string;
   image_url: string | null;
   max_members: number;
+  owner_id: number;
 }
 
 interface CommunityModalProps {
@@ -63,7 +63,19 @@ const CommunityModal: React.FC<CommunityModalProps> = ({
 
   const handleJoin = async () => {
     const user_id = currentUser.user_id; // 현재 사용자 ID
-    const res = await fetch("/api/community/join", {
+
+    const res = await fetch(
+      `/api/community/members-count?chatroomId=${chatroom.id}`
+    );
+    const data = await res.json();
+    const membersCount = data.count;
+
+    if (membersCount >= chatroom.max_members) {
+      alert("채팅방 인원이 가득 찼습니다.");
+      return;
+    }
+
+    const joinRes = await fetch("/api/community/join", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -71,7 +83,7 @@ const CommunityModal: React.FC<CommunityModalProps> = ({
       body: JSON.stringify({ chatroom_id: chatroom.id, user_id }),
     });
 
-    if (res.ok) {
+    if (joinRes.ok) {
       alert("채팅방에 참가하였습니다.");
       onHide();
       router.push(`/community/chat/${chatroom.id}`);

@@ -1,4 +1,5 @@
-import { useState, ChangeEvent, FormEvent } from "react";
+// pages/community/create/index.tsx
+import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 
@@ -57,11 +58,37 @@ const FormWrapper = styled.div`
 `;
 
 const ChatroomForm = () => {
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [name, setName] = useState<string>("");
   const [image, setImage] = useState<File | null>(null);
   const [hashtags, setHashtags] = useState<string[]>([""]);
   const [maxMembers, setMaxMembers] = useState<number>(100);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const res = await fetch("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUser(data.user);
+        } else {
+          localStorage.removeItem("token");
+          router.push("/auth/login");
+        }
+      } else {
+        router.push("/auth/login");
+      }
+    };
+
+    fetchCurrentUser();
+  }, [router]);
 
   const handleHashtagChange = (index: number, value: string) => {
     const newHashtags = [...hashtags];
@@ -81,10 +108,16 @@ const ChatroomForm = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      alert("로그인이 필요합니다.");
+      return router.push("/auth/login");
+    }
+
     const formData = new FormData();
     formData.append("name", name);
     formData.append("tags", hashtags.join(" "));
     formData.append("max_members", maxMembers.toString());
+    formData.append("owner_id", currentUser.user_id.toString());
     if (image) {
       formData.append("image", image);
     }
@@ -96,7 +129,7 @@ const ChatroomForm = () => {
 
     if (res.ok) {
       alert("채팅방이 생성되었습니다.");
-      router.back();
+      router.push("/community/list");
     }
   };
 

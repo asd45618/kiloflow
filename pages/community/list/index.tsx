@@ -80,6 +80,7 @@ interface Chatroom {
   tags: string;
   image_url: string | null;
   max_members: number;
+  owner_id: number;
 }
 
 const CommunityList = () => {
@@ -91,6 +92,7 @@ const CommunityList = () => {
     null
   );
   const [searchType, setSearchType] = useState("제목");
+  const [joinedChatrooms, setJoinedChatrooms] = useState<number[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -122,12 +124,35 @@ const CommunityList = () => {
     fetchChatrooms();
   }, [search, searchType]);
 
+  useEffect(() => {
+    if (currentUser) {
+      fetchJoinedChatrooms();
+    }
+  }, [currentUser]);
+
   const fetchChatrooms = async () => {
     const res = await fetch(
       `/api/community?search=${search}&type=${searchType}`
     );
     const data: Chatroom[] = await res.json();
     setChatrooms(data);
+  };
+
+  const fetchJoinedChatrooms = async () => {
+    const res = await fetch(
+      `/api/community/joined?currentUser=${currentUser.user_id}`
+    );
+    const data: { chatroom_id: number }[] = await res.json();
+    setJoinedChatrooms(data.map((item) => item.chatroom_id));
+  };
+
+  const handleChatroomClick = (chatroom: Chatroom) => {
+    if (joinedChatrooms.includes(chatroom.id)) {
+      router.push(`/community/chat/${chatroom.id}`);
+    } else {
+      setSelectedChatroom(chatroom);
+      setShowModal(true);
+    }
   };
 
   return (
@@ -157,10 +182,7 @@ const CommunityList = () => {
         <div
           className="list__info"
           key={chatroom.id}
-          onClick={() => {
-            setSelectedChatroom(chatroom);
-            setShowModal(true);
-          }}
+          onClick={() => handleChatroomClick(chatroom)}
         >
           <div className="info__img">
             <img
@@ -171,7 +193,9 @@ const CommunityList = () => {
           <div className="info__text__wrapper">
             <div className="text__top">
               <div className="top__title">{chatroom.name}</div>
-              <div className="top__num">34/100</div>
+              <div className="top__num">{`${chatroomMembersCount(
+                chatroom.id
+              )}/${chatroom.max_members}`}</div>
             </div>
             <div className="text__bottom">
               <p>{chatroom.tags}</p>
@@ -197,3 +221,11 @@ const CommunityList = () => {
 };
 
 export default CommunityList;
+
+const chatroomMembersCount = async (chatroomId: number) => {
+  const res = await fetch(
+    `/api/community/members-count?chatroomId=${chatroomId}`
+  );
+  const data = await res.json();
+  return data.count;
+};

@@ -59,7 +59,7 @@ export default async function handler(
       // Multer 미들웨어 실행
       await runMiddleware(req, res, upload.single("image"));
 
-      const { name, tags, max_members } = req.body;
+      const { name, tags, max_members, owner_id } = req.body;
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
       const chatroom = await prisma.chatrooms.create({
@@ -68,6 +68,7 @@ export default async function handler(
           tags,
           image_url: imageUrl,
           max_members: Number(max_members),
+          owner_id: Number(owner_id),
         },
       });
       res.status(201).json(chatroom);

@@ -1,4 +1,3 @@
-// pages/community/create/index.tsx
 import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
@@ -128,8 +127,27 @@ const ChatroomForm = () => {
     });
 
     if (res.ok) {
-      alert("채팅방이 생성되었습니다.");
-      router.push("/community/list");
+      const chatroom = await res.json();
+
+      const joinRes = await fetch("/api/community/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatroom_id: chatroom.id,
+          user_id: currentUser.user_id,
+        }),
+      });
+
+      if (joinRes.ok) {
+        alert("채팅방이 생성되었습니다.");
+        router.push(`/community/chat/${chatroom.id}`);
+      } else {
+        alert("채팅방에 참가하는 중 오류가 발생했습니다.");
+      }
+    } else {
+      alert("채팅방 생성 중 오류가 발생했습니다.");
     }
   };
 

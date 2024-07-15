@@ -1,4 +1,3 @@
-// pages/community/chat/[id]/index.tsx
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import styled from "styled-components";
@@ -29,6 +28,24 @@ const ChatContainer = styled.div`
       color: #fff;
     }
   }
+  .admin-actions {
+    display: flex;
+    justify-content: space-between;
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .danger {
+      background-color: #ff0000;
+      color: #fff;
+    }
+    .primary {
+      background-color: #007bff;
+      color: #fff;
+    }
+  }
 `;
 
 interface Message {
@@ -50,6 +67,7 @@ const ChatRoom = () => {
   const { id: roomId } = router.query;
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -92,6 +110,8 @@ const ChatRoom = () => {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
       });
 
+      checkIfOwner();
+
       return () => {
         socket.off("load_messages");
         socket.off("new_message");
@@ -99,6 +119,14 @@ const ChatRoom = () => {
       };
     }
   }, [roomId, currentUser]);
+
+  const checkIfOwner = async () => {
+    const res = await fetch(`/api/community/owner?roomId=${roomId}`);
+    const data = await res.json();
+    if (currentUser && data.owner_id === currentUser.user_id) {
+      setIsOwner(true);
+    }
+  };
 
   const sendMessage = () => {
     if (roomId && currentUser) {
@@ -109,6 +137,17 @@ const ChatRoom = () => {
         message,
       });
       setMessage("");
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    const res = await fetch(`/api/community/delete?roomId=${roomId}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      alert("채팅방이 삭제되었습니다.");
+      router.push("/community/list");
     }
   };
 
@@ -129,6 +168,22 @@ const ChatRoom = () => {
         />
         <button onClick={sendMessage}>Send</button>
       </div>
+      {isOwner && (
+        <div className="admin-actions">
+          <button className="primary" onClick={() => alert("공지 기능 미구현")}>
+            공지
+          </button>
+          <button
+            className="danger"
+            onClick={() => alert("내보내기 기능 미구현")}
+          >
+            내보내기
+          </button>
+          <button className="danger" onClick={handleDeleteRoom}>
+            방 삭제
+          </button>
+        </div>
+      )}
     </ChatContainer>
   );
 };

@@ -1,5 +1,6 @@
 // pages/community/list/index.tsx
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
@@ -7,6 +8,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import CommunityModal from "../../../components/community/communityModal";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import communityThumb from "../../../public/communityThumb.png";
 
 const CommunityListWrapper = styled.div`
   height: 100vh;
@@ -44,7 +46,12 @@ const CommunityListWrapper = styled.div`
       margin-right: 5%;
       position: relative;
       img {
+        border-radius: 50%;
+        border: 1px solid #ddd;
         width: 100%;
+        height: auto;
+        aspect-ratio: 1/1;
+        object-fit: cover;
       }
     }
     .info__text__wrapper {
@@ -212,9 +219,11 @@ const CommunityList = () => {
           onClick={() => handleChatroomClick(chatroom)}
         >
           <div className="info__img">
-            <img
-              src={chatroom.image_url || "/communityThumb.png"}
+            <Image
+              src={chatroom.image_url || communityThumb}
               alt="thumb"
+              width={100}
+              height={100}
             />
           </div>
           <div className="info__text__wrapper">

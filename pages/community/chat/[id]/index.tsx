@@ -1,12 +1,40 @@
+// pages/community/chat/[id]/index.tsx
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import socket from "../../../../lib/socket"; // 소켓 초기화 파일 import
 
+interface UserListProps {
+  showUserList: boolean;
+}
+
 const ChatContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
+  .top {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ccc;
+    .chat-info {
+      display: flex;
+      align-items: center;
+      img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+    }
+    .menu-button {
+      cursor: pointer;
+      font-size: 24px;
+    }
+  }
   .messages {
     flex: 1;
     overflow-y: scroll;
@@ -48,6 +76,23 @@ const ChatContainer = styled.div`
   }
 `;
 
+const UserList = styled.div<UserListProps>`
+  display: ${({ showUserList }) => (showUserList ? "block" : "none")};
+  position: absolute;
+  top: 100%;
+  right: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  z-index: 100;
+  .user-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+  }
+`;
+
 interface Message {
   id: number;
   user_id: number;
@@ -61,6 +106,14 @@ interface User {
   profile_image: string;
 }
 
+interface Chatroom {
+  id: number;
+  name: string;
+  image_url: string | null;
+  max_members: number;
+  owner_id: number;
+}
+
 const ChatRoom = () => {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -68,6 +121,9 @@ const ChatRoom = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isOwner, setIsOwner] = useState(false);
+  const [chatroomInfo, setChatroomInfo] = useState<Chatroom | null>(null);
+  const [participatingUsers, setParticipatingUsers] = useState<User[]>([]);
+  const [showUserList, setShowUserList] = useState(false);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -111,6 +167,8 @@ const ChatRoom = () => {
       });
 
       checkIfOwner();
+      fetchChatroomInfo();
+      fetchParticipatingUsers();
 
       return () => {
         socket.off("load_messages");
@@ -121,11 +179,30 @@ const ChatRoom = () => {
   }, [roomId, currentUser]);
 
   const checkIfOwner = async () => {
-    const res = await fetch(`/api/community/owner?roomId=${roomId}`);
+    const res = await fetch(
+      `/api/community/current-chatroom-info?roomId=${roomId}&action=info`
+    );
     const data = await res.json();
     if (currentUser && data.owner_id === currentUser.user_id) {
       setIsOwner(true);
     }
+    setChatroomInfo(data);
+  };
+
+  const fetchChatroomInfo = async () => {
+    const res = await fetch(
+      `/api/community/current-chatroom-info?roomId=${roomId}&action=info`
+    );
+    const data = await res.json();
+    setChatroomInfo(data);
+  };
+
+  const fetchParticipatingUsers = async () => {
+    const res = await fetch(
+      `/api/community/current-chatroom-info?roomId=${roomId}&action=users`
+    );
+    const data = await res.json();
+    setParticipatingUsers(data);
   };
 
   const sendMessage = () => {
@@ -153,6 +230,53 @@ const ChatRoom = () => {
 
   return (
     <ChatContainer>
+      <div className="top">
+        <div className="chat-info">
+          <img
+            src={chatroomInfo?.image_url || "/default-chatroom.png"}
+            alt="Chatroom"
+          />
+          <div>
+            <h3>{chatroomInfo?.name}</h3>
+            <p>
+              {participatingUsers.length}/{chatroomInfo?.max_members}
+            </p>
+          </div>
+        </div>
+        <div
+          className="menu-button"
+          onClick={() => setShowUserList(!showUserList)}
+        >
+          ☰
+        </div>
+        <UserList showUserList={showUserList}>
+          {participatingUsers.map((user) => (
+            <div className="user-item" key={user.user_id}>
+              <span>{user.nickname}</span>
+              {user.user_id === chatroomInfo?.owner_id && <span>(방장)</span>}
+            </div>
+          ))}
+          {isOwner && (
+            <div className="admin-actions">
+              <button
+                className="primary"
+                onClick={() => alert("공지 기능 미구현")}
+              >
+                공지
+              </button>
+              <button
+                className="danger"
+                onClick={() => alert("내보내기 기능 미구현")}
+              >
+                내보내기
+              </button>
+              <button className="danger" onClick={handleDeleteRoom}>
+                방 삭제
+              </button>
+            </div>
+          )}
+        </UserList>
+      </div>
       <div className="messages">
         {messages.map((msg) => (
           <div key={msg.id}>

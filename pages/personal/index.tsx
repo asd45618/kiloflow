@@ -6,6 +6,7 @@ import ProfileModify from "../../components/personal/profileModify";
 import ParticipatingChat from "../../components/personal/participatingChat";
 
 const PersonalBlock = styled.div`
+  height: 100vh;
   nav {
     padding: 10px 0;
     display: flex;

@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 const CommunityListWrapper = styled.div`
+  height: 100vh;
   position: relative;
   .search {
     display: flex;

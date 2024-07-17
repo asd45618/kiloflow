@@ -36,22 +36,30 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     // 채팅방 목록 가져오기
-    const { search } = req.query;
+    const { search, type } = req.query;
+    const searchType = type === "태그" ? "tags" : "name";
+
     const chatrooms = await prisma.chatrooms.findMany({
       where: {
-        OR: [
-          { name: { contains: search as string } },
-          { tags: { contains: search as string } },
-        ],
+        [searchType]: { contains: search as string },
       },
     });
-    res.status(200).json(chatrooms);
+    // 해시태그 앞에 '#' 붙이기
+    const updatedChatrooms = chatrooms.map((chatroom) => ({
+      ...chatroom,
+      tags: chatroom.tags
+        .split(" ")
+        .map((tag) => `#${tag}`)
+        .join(" "),
+    }));
+
+    res.status(200).json(updatedChatrooms);
   } else if (req.method === "POST") {
     try {
       // Multer 미들웨어 실행
       await runMiddleware(req, res, upload.single("image"));
 
-      const { name, tags, max_members } = req.body;
+      const { name, tags, max_members, owner_id } = req.body;
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
       const chatroom = await prisma.chatrooms.create({
@@ -60,6 +68,7 @@ export default async function handler(
           tags,
           image_url: imageUrl,
           max_members: Number(max_members),
+          owner_id: Number(owner_id),
         },
       });
       res.status(201).json(chatroom);

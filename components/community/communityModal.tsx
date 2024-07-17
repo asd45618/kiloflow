@@ -1,8 +1,8 @@
-// components/community/communityModal.tsx
 import React from "react";
 import styled from "styled-components";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import { useRouter } from "next/router";
 
 const ModalWrapper = styled.div`
   display: block;
@@ -43,20 +43,52 @@ interface Chatroom {
   tags: string;
   image_url: string | null;
   max_members: number;
+  owner_id: number;
 }
 
 interface CommunityModalProps {
   chatroom: Chatroom | null;
+  currentUser: any;
   onHide: () => void;
-  onJoin: (chatroom: Chatroom) => Promise<void>;
 }
 
 const CommunityModal: React.FC<CommunityModalProps> = ({
   chatroom,
+  currentUser,
   onHide,
-  onJoin,
 }) => {
+  const router = useRouter();
+
   if (!chatroom) return null;
+
+  const handleJoin = async () => {
+    const user_id = currentUser.user_id; // 현재 사용자 ID
+
+    const res = await fetch(
+      `/api/community/members-count?chatroomId=${chatroom.id}`
+    );
+    const data = await res.json();
+    const membersCount = data.count;
+
+    if (membersCount >= chatroom.max_members) {
+      alert("채팅방 인원이 가득 찼습니다.");
+      return;
+    }
+
+    const joinRes = await fetch("/api/community/join", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ chatroom_id: chatroom.id, user_id }),
+    });
+
+    if (joinRes.ok) {
+      alert("채팅방에 참가하였습니다.");
+      onHide();
+      router.push(`/community/chat/${chatroom.id}`);
+    }
+  };
 
   return (
     <ModalWrapper className="modal show">
@@ -64,7 +96,7 @@ const CommunityModal: React.FC<CommunityModalProps> = ({
         <Modal.Header closeButton onClick={onHide}>
           <div className="modal__img">
             <img
-              src={chatroom.image_url || "../../communityThumb.png"}
+              src={chatroom.image_url || "/communityThumb.png"}
               alt="채팅방 이미지"
             />
           </div>
@@ -76,7 +108,7 @@ const CommunityModal: React.FC<CommunityModalProps> = ({
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="primary" onClick={() => onJoin(chatroom)}>
+          <Button variant="primary" onClick={handleJoin}>
             채팅방 참여하기
           </Button>
         </Modal.Footer>

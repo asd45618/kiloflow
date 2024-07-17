@@ -1,13 +1,15 @@
+// pages/community/list/index.tsx
 import { useState, useEffect } from "react";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 import Dropdown from "react-bootstrap/Dropdown";
 import CommunityModal from "../../../components/community/communityModal";
-import ChatroomForm from "../../../components/community/chatroomForm";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const CommunityListWrapper = styled.div`
+  height: 100vh;
   position: relative;
   .search {
     display: flex;
@@ -40,6 +42,7 @@ const CommunityListWrapper = styled.div`
     .info__img {
       flex: 0 0 15%;
       margin-right: 5%;
+      position: relative;
       img {
         width: 100%;
       }
@@ -78,54 +81,104 @@ interface Chatroom {
   tags: string;
   image_url: string | null;
   max_members: number;
+  owner_id: number;
 }
 
 const CommunityList = () => {
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [chatrooms, setChatrooms] = useState<Chatroom[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedChatroom, setSelectedChatroom] = useState<Chatroom | null>(
     null
   );
-  const [showForm, setShowForm] = useState(false);
   const [searchType, setSearchType] = useState("제목");
+  const [joinedChatrooms, setJoinedChatrooms] = useState<number[]>([]);
+  const [chatroomMemberCounts, setChatroomMemberCounts] = useState<{
+    [key: number]: number;
+  }>({});
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const res = await fetch("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentUser(data.user);
+        } else {
+          localStorage.removeItem("token");
+          router.push("/auth/login");
+        }
+      } else {
+        router.push("/auth/login");
+      }
+    };
+
+    fetchCurrentUser();
+  }, [router]);
 
   useEffect(() => {
     fetchChatrooms();
-  }, [search]);
+  }, [search, searchType]);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchJoinedChatrooms();
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (chatrooms.length > 0) {
+      fetchChatroomMemberCounts();
+    }
+  }, [chatrooms]);
 
   const fetchChatrooms = async () => {
-    const res = await fetch(`/api/community?search=${search}`);
+    const res = await fetch(
+      `/api/community?search=${search}&type=${searchType}`
+    );
     const data: Chatroom[] = await res.json();
     setChatrooms(data);
   };
 
-  const handleJoin = async (chatroom: Chatroom) => {
-    const user_id = 1; // 현재 사용자 ID (로그인 구현 필요)
-    const res = await fetch("/api/community/join", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ chatroom_id: chatroom.id, user_id }),
-    });
-
-    if (res.ok) {
-      setShowModal(false);
-      alert("채팅방에 참가하였습니다.");
-    }
+  const fetchJoinedChatrooms = async () => {
+    const res = await fetch(
+      `/api/community/joined?currentUser=${currentUser.user_id}`
+    );
+    const data: { chatroom_id: number }[] = await res.json();
+    setJoinedChatrooms(data.map((item) => item.chatroom_id));
   };
 
-  const handleCreateChatroom = async (formData: FormData) => {
-    const res = await fetch("/api/community", {
-      method: "POST",
-      body: formData,
-    });
+  const fetchChatroomMemberCounts = async () => {
+    const counts = await Promise.all(
+      chatrooms.map(async (chatroom) => {
+        const res = await fetch(
+          `/api/community/members-count?chatroomId=${chatroom.id}`
+        );
+        const data = await res.json();
+        return { chatroomId: chatroom.id, count: data.count };
+      })
+    );
+    const countsMap = counts.reduce(
+      (acc, { chatroomId, count }) => ({ ...acc, [chatroomId]: count }),
+      {}
+    );
+    setChatroomMemberCounts(countsMap);
+  };
 
-    if (res.ok) {
-      fetchChatrooms();
-      setShowForm(false);
-      alert("채팅방이 생성되었습니다.");
+  const handleChatroomClick = (chatroom: Chatroom) => {
+    if (joinedChatrooms.includes(chatroom.id)) {
+      router.push(`/community/chat/${chatroom.id}`);
+    } else {
+      setSelectedChatroom(chatroom);
+      setShowModal(true);
     }
   };
 
@@ -156,21 +209,20 @@ const CommunityList = () => {
         <div
           className="list__info"
           key={chatroom.id}
-          onClick={() => {
-            setSelectedChatroom(chatroom);
-            setShowModal(true);
-          }}
+          onClick={() => handleChatroomClick(chatroom)}
         >
           <div className="info__img">
             <img
-              src={chatroom.image_url || "../../communityThumb.png"}
+              src={chatroom.image_url || "/communityThumb.png"}
               alt="thumb"
             />
           </div>
           <div className="info__text__wrapper">
             <div className="text__top">
               <div className="top__title">{chatroom.name}</div>
-              <div className="top__num">34/100</div>
+              <div className="top__num">
+                {chatroomMemberCounts[chatroom.id] || 0}/{chatroom.max_members}
+              </div>
             </div>
             <div className="text__bottom">
               <p>{chatroom.tags}</p>
@@ -181,24 +233,16 @@ const CommunityList = () => {
       {showModal && (
         <CommunityModal
           chatroom={selectedChatroom}
+          currentUser={currentUser}
           onHide={() => setShowModal(false)}
-          onJoin={handleJoin}
         />
       )}
-      <div className="create-chatroom">
-        <button onClick={() => setShowForm(true)}>채팅방 생성하기1</button>
-      </div>
+
       <Link href="/community/create">
         <div className="create-chatroom">
           <button>채팅방 생성하기</button>
         </div>
       </Link>
-      {showForm && (
-        <ChatroomForm
-          onSubmit={handleCreateChatroom}
-          onClose={() => setShowForm(false)}
-        />
-      )}
     </CommunityListWrapper>
   );
 };

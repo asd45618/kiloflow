@@ -14,6 +14,11 @@
 }
 
 .input__small {
+  width: 50%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 10px;
 }
 
 .button__big {
@@ -50,4 +55,22 @@
 
 .success {
   color: green;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 20px 0 30px 0;
+
+  .backButton {
+    font-size: 2rem;
+    cursor: pointer;
+  }
+  .h2 {
+    flex-grow: 1;
+    text-align: center;
+    margin: 0;
+  }
 }

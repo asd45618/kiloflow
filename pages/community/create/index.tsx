@@ -1,25 +1,21 @@
 import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import { IoIosArrowBack } from "react-icons/io";
+import styles from "../../../styles/components.module.css";
 
 const FormWrapper = styled.div`
+  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   form {
-    display: flex;
-    flex-direction: column;
     width: 100%;
     max-width: 500px;
     .form-group {
       margin-bottom: 15px;
-      input,
-      textarea {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-      }
+      display: flex;
+      flex-direction: column;
     }
     .hashtags {
       display: flex;
@@ -31,27 +27,10 @@ const FormWrapper = styled.div`
         span {
           margin-right: 5px;
         }
-        input {
-          width: auto;
-        }
       }
     }
     .actions {
-      display: flex;
-      justify-content: space-between;
-      button {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        &.submit {
-          background-color: #007bff;
-          color: #fff;
-        }
-        &.cancel {
-          background-color: #ccc;
-        }
-      }
+      text-align: center;
     }
   }
 `;
@@ -153,6 +132,12 @@ const ChatroomForm = () => {
 
   return (
     <FormWrapper>
+      <div className={styles.top}>
+        <button className={styles.backButton}>
+          <IoIosArrowBack />
+        </button>
+        <h2 className={styles.h2}>채팅방 만들기</h2>
+      </div>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>채팅방 이름</label>
@@ -162,6 +147,7 @@ const ChatroomForm = () => {
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               setName(e.target.value)
             }
+            className={styles.input__big}
             required
           />
         </div>
@@ -173,6 +159,7 @@ const ChatroomForm = () => {
               setImage(e.target.files ? e.target.files[0] : null)
             }
             accept="image/*"
+            className={styles.input__small}
           />
         </div>
         <div className="form-group">
@@ -183,6 +170,7 @@ const ChatroomForm = () => {
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               setMaxMembers(Number(e.target.value))
             }
+            className={styles.input__small}
             required
           />
         </div>
@@ -197,6 +185,7 @@ const ChatroomForm = () => {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   handleHashtagChange(idx, e.target.value)
                 }
+                className={styles.input__small}
               />
               {idx === hashtags.length - 1 && (
                 <>
@@ -217,10 +206,7 @@ const ChatroomForm = () => {
           ))}
         </div>
         <div className="actions">
-          <button type="button" className="cancel">
-            취소
-          </button>
-          <button type="submit" className="submit">
+          <button type="submit" className={styles.button__small}>
             생성
           </button>
         </div>

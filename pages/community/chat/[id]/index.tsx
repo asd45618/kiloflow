@@ -88,8 +88,15 @@ const UserList = styled.div<UserListProps>`
   z-index: 100;
   .user-item {
     display: flex;
-    justify-content: space-between;
-    padding: 5px 0;
+    align-items: center;
+    // justify-content: space-between;
+    padding: 5px;
+    img {
+      width: 50px;
+      border-radius: 50px;
+      border: 1px solid #ddd;
+      margin-right: 5px;
+    }
   }
 `;
 
@@ -252,6 +259,7 @@ const ChatRoom = () => {
         <UserList showUserList={showUserList}>
           {participatingUsers.map((user) => (
             <div className="user-item" key={user.user_id}>
+              <img src={user.profile_image} alt="유저프로필" />
               <span>{user.nickname}</span>
               {user.user_id === chatroomInfo?.owner_id && <span>(방장)</span>}
             </div>
@@ -292,22 +300,6 @@ const ChatRoom = () => {
         />
         <button onClick={sendMessage}>Send</button>
       </div>
-      {isOwner && (
-        <div className="admin-actions">
-          <button className="primary" onClick={() => alert("공지 기능 미구현")}>
-            공지
-          </button>
-          <button
-            className="danger"
-            onClick={() => alert("내보내기 기능 미구현")}
-          >
-            내보내기
-          </button>
-          <button className="danger" onClick={handleDeleteRoom}>
-            방 삭제
-          </button>
-        </div>
-      )}
     </ChatContainer>
   );
 };

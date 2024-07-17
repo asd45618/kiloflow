@@ -49,6 +49,7 @@ export default async function handler(
       ...chatroom,
       tags: chatroom.tags
         .split(" ")
+        .filter((tag) => tag.trim() !== "")
         .map((tag) => `#${tag}`)
         .join(" "),
     }));
@@ -59,8 +60,8 @@ export default async function handler(
       // Multer 미들웨어 실행
       await runMiddleware(req, res, upload.single("image"));
 
-      const { name, tags, max_members, owner_id } = req.body;
-      const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+      const { name, tags, max_members, owner_id, image } = req.body;
+      const imageUrl = req.file ? `/uploads/${req.file.filename}` : image;
 
       const chatroom = await prisma.chatrooms.create({
         data: {

@@ -224,9 +224,11 @@ const CommunityList = () => {
                 {chatroomMemberCounts[chatroom.id] || 0}/{chatroom.max_members}
               </div>
             </div>
-            <div className="text__bottom">
-              <p>{chatroom.tags}</p>
-            </div>
+            {chatroom.tags && chatroom.tags.trim() !== "" && (
+              <div className="text__bottom">
+                <p>{chatroom.tags}</p>
+              </div>
+            )}
           </div>
         </div>
       ))}

@@ -8,6 +8,7 @@ import styled from "styled-components";
 import socket from "../../../../lib/socket"; // 소켓 초기화 파일 import
 import { IoIosArrowBack } from "react-icons/io";
 import ChatRoomUserList from "../../../../components/community/chatroomUserList";
+import Notice from "../../../../components/community/notice";
 
 import minion from "../../../../public/minion1.png";
 
@@ -138,6 +139,11 @@ interface Chatroom {
   owner_id: number;
 }
 
+interface Notice {
+  title: string;
+  content: string;
+}
+
 const ChatRoom = () => {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -148,6 +154,7 @@ const ChatRoom = () => {
   const [chatroomInfo, setChatroomInfo] = useState<Chatroom | null>(null);
   const [participatingUsers, setParticipatingUsers] = useState<User[]>([]);
   const [showUserList, setShowUserList] = useState(false);
+  const [latestNotice, setLatestNotice] = useState<Notice | null>(null);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -207,6 +214,7 @@ const ChatRoom = () => {
       checkIfOwner();
       fetchChatroomInfo();
       fetchParticipatingUsers();
+      fetchLatestNotice();
 
       return () => {
         socket.off("load_messages");
@@ -244,6 +252,12 @@ const ChatRoom = () => {
     );
     const data = await res.json();
     setParticipatingUsers(data);
+  };
+
+  const fetchLatestNotice = async () => {
+    const res = await fetch(`/api/community/latest-notice?roomId=${roomId}`);
+    const data = await res.json();
+    setLatestNotice(data);
   };
 
   const sendMessage = () => {
@@ -323,6 +337,9 @@ const ChatRoom = () => {
       </div>
 
       <div className="messages">
+        {latestNotice && (
+          <Notice title={latestNotice.title} content={latestNotice.content} />
+        )}
         {messages.map((msg) => {
           const isCurrentUser = currentUser
             ? msg.user_id === currentUser.user_id

@@ -88,6 +88,10 @@ const ChatRoomUserList: React.FC<UserListProps> = ({
     router.push(`/community/chat/detailSetting/${chatroomInfo?.id}`);
   };
 
+  const handleNoticeClick = () => {
+    router.push(`/community/chat/notice/${chatroomInfo?.id}`);
+  };
+
   return (
     <UserListContainer showUserList={showUserList}>
       <div className="userlist__container">
@@ -113,7 +117,7 @@ const ChatRoomUserList: React.FC<UserListProps> = ({
             <button onClick={handleSettingsClick}>
               <IoSettingsOutline />
             </button>
-            <button onClick={() => alert("공지 기능 미구현")}>
+            <button onClick={handleNoticeClick}>
               <TbSpeakerphone />
             </button>
           </div>

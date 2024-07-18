@@ -286,17 +286,6 @@ const ChatRoom = () => {
     }
   };
 
-  const handleDeleteRoom = async () => {
-    const res = await fetch(`/api/community/delete?roomId=${roomId}`, {
-      method: "DELETE",
-    });
-
-    if (res.ok) {
-      alert("채팅방이 삭제되었습니다.");
-      router.push("/community/list");
-    }
-  };
-
   return (
     <ChatContainer>
       <div className="top">
@@ -329,7 +318,6 @@ const ChatRoom = () => {
           isOwner={isOwner}
           chatroomInfo={chatroomInfo}
           handleLeaveRoom={handleLeaveRoom}
-          // handleDeleteRoom={handleDeleteRoom}
           setShowUserList={setShowUserList}
         />
       </div>

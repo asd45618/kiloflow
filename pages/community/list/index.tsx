@@ -9,31 +9,42 @@ import CommunityModal from "../../../components/community/communityModal";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import communityThumb from "../../../public/communityThumb.png";
+import { HiPlusSm } from "react-icons/hi";
+import { IoChatbubble } from "react-icons/io5";
 
 const CommunityListWrapper = styled.div`
-  // height: 100vh;
   position: relative;
-  .search {
+  .top {
     display: flex;
+    justify-content: space-around;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    margin: 20px 0;
-    .dropdown-toggle {
-      background-color: inherit;
-      color: #000;
-      border: none;
+    .search {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin: 20px 0;
+      .dropdown-toggle {
+        background-color: inherit;
+        color: #000;
+        border: none;
+      }
+      .dropdown-menu {
+        min-width: 0;
+      }
+      input {
+        border-bottom: 1px solid #000;
+        outline: none;
+        background-color: inherit;
+      }
+      svg {
+        cursor: pointer;
+      }
     }
-    .dropdown-menu {
-      min-width: 0;
-    }
-    input {
-      border-bottom: 1px solid #000;
-      outline: none;
-      background-color: inherit;
-    }
-    svg {
-      cursor: pointer;
+    .create__chatroom {
+      align-items: center;
+      display: flex;
+      font-size: 24px;
     }
   }
   .list__info {
@@ -191,26 +202,35 @@ const CommunityList = () => {
 
   return (
     <CommunityListWrapper>
-      <div className="search">
-        <Dropdown onClick={(e) => e.preventDefault()}>
-          <Dropdown.Toggle variant="success" id="dropdown-basic">
-            {searchType}
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            <Dropdown.Item onClick={() => setSearchType("제목")}>
-              제목
-            </Dropdown.Item>
-            <Dropdown.Item onClick={() => setSearchType("태그")}>
-              태그
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <FontAwesomeIcon icon={faMagnifyingGlass} />
+      <div className="top">
+        <div className="search">
+          <Dropdown onClick={(e) => e.preventDefault()}>
+            <Dropdown.Toggle variant="success" id="dropdown-basic">
+              {searchType}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={() => setSearchType("제목")}>
+                제목
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => setSearchType("태그")}>
+                태그
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <FontAwesomeIcon icon={faMagnifyingGlass} />
+        </div>
+
+        <Link href="/community/create">
+          <div className="create__chatroom">
+            <HiPlusSm />
+            <IoChatbubble />
+          </div>
+        </Link>
       </div>
       {chatrooms.map((chatroom) => (
         <div
@@ -248,12 +268,6 @@ const CommunityList = () => {
           onHide={() => setShowModal(false)}
         />
       )}
-
-      <Link href="/community/create">
-        <div className="create-chatroom">
-          <button>채팅방 생성하기</button>
-        </div>
-      </Link>
     </CommunityListWrapper>
   );
 };

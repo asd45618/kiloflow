@@ -1,0 +1,1 @@
+//componets > community> notice.tsx

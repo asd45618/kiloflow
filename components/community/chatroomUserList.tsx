@@ -12,7 +12,6 @@ interface UserListProps {
   isOwner: boolean;
   chatroomInfo: Chatroom | null;
   handleLeaveRoom: () => void;
-  //   handleDeleteRoom: () => void;
   setShowUserList: (value: boolean) => void;
 }
 
@@ -81,7 +80,6 @@ const ChatRoomUserList: React.FC<UserListProps> = ({
   isOwner,
   chatroomInfo,
   handleLeaveRoom,
-  //   handleDeleteRoom,
   setShowUserList,
 }) => {
   const router = useRouter();

@@ -41,29 +41,52 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
             where: { user_id: Number(userId) },
           });
 
-          if (user) {
-            const existingSystemMessage = messages.find(
-              (msg) =>
-                msg.user_id === null &&
-                msg.message === `${user.nickname}님이 입장했습니다.`
-            );
-
-            if (!existingSystemMessage) {
-              const systemMessage = await prisma.chatMessages.create({
-                data: {
-                  chatroom_id: Number(roomId),
-                  user_id: null, // 시스템 메시지의 user_id를 null로 설정
-                  message: `${user.nickname}님이 입장했습니다.`,
-                },
-              });
-
-              io.to(roomId).emit("new_message", systemMessage);
-            }
-          } else {
+          if (!user) {
             console.error(`User with ID ${userId} not found`);
+            return;
+          }
+
+          const isAlreadyMember = await prisma.chatroom_members.findFirst({
+            where: {
+              chatroom_id: Number(roomId),
+              user_id: Number(userId),
+            },
+          });
+
+          if (!isAlreadyMember) {
+            await prisma.chatroom_members.create({
+              data: {
+                chatroom_id: Number(roomId),
+                user_id: Number(userId),
+              },
+            });
+
+            socket.emit("first_join", { roomId, userId });
           }
         } catch (error) {
           console.error("Error in join_room:", error);
+        }
+      });
+
+      socket.on("first_join", async ({ roomId, userId }) => {
+        try {
+          const user = await prisma.users.findUnique({
+            where: { user_id: Number(userId) },
+          });
+
+          if (user) {
+            const systemMessage = await prisma.chatMessages.create({
+              data: {
+                chatroom_id: Number(roomId),
+                user_id: null, // 시스템 메시지의 user_id를 null로 설정
+                message: `${user.nickname}님이 입장했습니다.`,
+              },
+            });
+
+            io.to(roomId).emit("new_message", systemMessage);
+          }
+        } catch (error) {
+          console.error("Error in first_join:", error);
         }
       });
 

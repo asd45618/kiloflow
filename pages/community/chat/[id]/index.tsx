@@ -329,7 +329,7 @@ const ChatRoom = () => {
           isOwner={isOwner}
           chatroomInfo={chatroomInfo}
           handleLeaveRoom={handleLeaveRoom}
-          handleDeleteRoom={handleDeleteRoom}
+          // handleDeleteRoom={handleDeleteRoom}
           setShowUserList={setShowUserList}
         />
       </div>

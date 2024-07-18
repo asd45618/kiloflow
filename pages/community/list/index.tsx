@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import communityThumb from "../../../public/communityThumb.png";
 
 const CommunityListWrapper = styled.div`
-  height: 100vh;
+  // height: 100vh;
   position: relative;
   .search {
     display: flex;

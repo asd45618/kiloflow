@@ -1,7 +1,6 @@
-// components/community/ChatroomUserList.tsx
-
 import React from "react";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import styled from "styled-components";
 import { RxExit } from "react-icons/rx";
 import { TbSpeakerphone } from "react-icons/tb";
@@ -13,7 +12,7 @@ interface UserListProps {
   isOwner: boolean;
   chatroomInfo: Chatroom | null;
   handleLeaveRoom: () => void;
-  handleDeleteRoom: () => void;
+  //   handleDeleteRoom: () => void;
   setShowUserList: (value: boolean) => void;
 }
 
@@ -82,9 +81,15 @@ const ChatRoomUserList: React.FC<UserListProps> = ({
   isOwner,
   chatroomInfo,
   handleLeaveRoom,
-  handleDeleteRoom,
+  //   handleDeleteRoom,
   setShowUserList,
 }) => {
+  const router = useRouter();
+
+  const handleSettingsClick = () => {
+    router.push(`/community/chat/detailSetting/${chatroomInfo?.id}`);
+  };
+
   return (
     <UserListContainer showUserList={showUserList}>
       <div className="userlist__container">
@@ -107,7 +112,7 @@ const ChatRoomUserList: React.FC<UserListProps> = ({
         </div>
         {isOwner ? (
           <div className="admin__actions">
-            <button onClick={handleDeleteRoom}>
+            <button onClick={handleSettingsClick}>
               <IoSettingsOutline />
             </button>
             <button onClick={() => alert("공지 기능 미구현")}>

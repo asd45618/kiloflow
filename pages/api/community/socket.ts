@@ -56,27 +56,6 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
           });
 
           if (!existingSystemMessage) {
-            // socket.on("first_join", async ({ roomId, userId, user }) => {
-            //   try {
-            //     const user = await prisma.users.findUnique({
-            //       where: { user_id: Number(userId) },
-            //     });
-
-            //     if (user) {
-            //       const systemMessage = await prisma.chatMessages.create({
-            //         data: {
-            //           chatroom_id: Number(roomId),
-            //           user_id: null,
-            //           message: `${user.nickname}님이 입장했습니다.`,
-            //         },
-            //       });
-
-            //       io.to(roomId).emit("new_message", systemMessage);
-            //     }
-            //   } catch (error) {
-            //     console.error("Error in first_join:", error);
-            //   }
-            // });
             const systemMessage = await prisma.chatMessages.create({
               data: {
                 chatroom_id: Number(roomId),
@@ -124,6 +103,15 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
           });
 
           io.to(roomId).emit("new_message", systemMessage);
+
+          // 사용자의 입장 메시지 삭제
+          await prisma.chatMessages.deleteMany({
+            where: {
+              chatroom_id: Number(roomId),
+              user_id: null,
+              message: `${user.nickname}님이 입장했습니다.`,
+            },
+          });
 
           await prisma.chatroom_members.deleteMany({
             where: {

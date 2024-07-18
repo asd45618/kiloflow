@@ -46,39 +46,41 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
             return;
           }
 
-          const isAlreadyMember = await prisma.chatroom_members.findFirst({
+          // 기존 메시지가 있는지 확인
+          const existingSystemMessage = await prisma.chatMessages.findFirst({
             where: {
               chatroom_id: Number(roomId),
-              user_id: Number(userId),
+              user_id: null,
+              message: `${user.nickname}님이 입장했습니다.`,
             },
           });
 
-          if (!isAlreadyMember) {
-            await prisma.chatroom_members.create({
-              data: {
-                chatroom_id: Number(roomId),
-                user_id: Number(userId),
-              },
-            });
+          if (!existingSystemMessage) {
+            // socket.on("first_join", async ({ roomId, userId, user }) => {
+            //   try {
+            //     const user = await prisma.users.findUnique({
+            //       where: { user_id: Number(userId) },
+            //     });
 
-            socket.emit("first_join", { roomId, userId });
-          }
-        } catch (error) {
-          console.error("Error in join_room:", error);
-        }
-      });
+            //     if (user) {
+            //       const systemMessage = await prisma.chatMessages.create({
+            //         data: {
+            //           chatroom_id: Number(roomId),
+            //           user_id: null,
+            //           message: `${user.nickname}님이 입장했습니다.`,
+            //         },
+            //       });
 
-      socket.on("first_join", async ({ roomId, userId }) => {
-        try {
-          const user = await prisma.users.findUnique({
-            where: { user_id: Number(userId) },
-          });
-
-          if (user) {
+            //       io.to(roomId).emit("new_message", systemMessage);
+            //     }
+            //   } catch (error) {
+            //     console.error("Error in first_join:", error);
+            //   }
+            // });
             const systemMessage = await prisma.chatMessages.create({
               data: {
                 chatroom_id: Number(roomId),
-                user_id: null, // 시스템 메시지의 user_id를 null로 설정
+                user_id: null,
                 message: `${user.nickname}님이 입장했습니다.`,
               },
             });
@@ -86,7 +88,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
             io.to(roomId).emit("new_message", systemMessage);
           }
         } catch (error) {
-          console.error("Error in first_join:", error);
+          console.error("Error in join_room:", error);
         }
       });
 
@@ -116,7 +118,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
           const systemMessage = await prisma.chatMessages.create({
             data: {
               chatroom_id: Number(roomId),
-              user_id: null, // 시스템 메시지의 user_id를 null로 설정
+              user_id: null,
               message: `${user.nickname}님이 나갔습니다.`,
             },
           });

@@ -1,3 +1,4 @@
+// pages/community/chat/[id]/index.tsx
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -6,11 +7,9 @@ import styles from "../../../../styles/components.module.css";
 import styled from "styled-components";
 import socket from "../../../../lib/socket"; // 소켓 초기화 파일 import
 import { IoIosArrowBack } from "react-icons/io";
-import { RxExit } from "react-icons/rx";
+import ChatRoomUserList from "../../../../components/community/chatroomUserList";
 
-interface UserListProps {
-  showUserList: boolean;
-}
+import minion from "../../../../public/minion1.png";
 
 const ChatContainer = styled.div`
   overflow-y: hidden;
@@ -79,55 +78,6 @@ const ChatContainer = styled.div`
   }
 `;
 
-const UserList = styled.div<UserListProps>`
-  display: ${({ showUserList }) => (showUserList ? "block" : "none")};
-  overflow-y: hidden;
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  height: 100%;
-  width: 250px;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 20px;
-  z-index: 100;
-  .userlist__container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    .cancel {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-    .user__item__wrap {
-      overflow-y: scroll;
-      height: 100%;
-      .user__item {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        padding: 5px;
-        img {
-          width: 50px;
-          border-radius: 50px;
-          border: 1px solid #ddd;
-          margin-right: 5px;
-        }
-      }
-    }
-    .admin__actions {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      button {
-        margin: 2px;
-      }
-    }
-  }
-`;
-
 const MessageContainer = styled.div<{
   isCurrentUser: boolean;
   isSystemMessage?: boolean;
@@ -158,6 +108,7 @@ const MessageContainer = styled.div<{
     width: 40px;
     height: 40px;
     border-radius: 50%;
+    border: 1px solid #ddd;
     margin-right: 10px;
   }
   .nickname {
@@ -249,16 +200,6 @@ const ChatRoom = () => {
         fetchParticipatingUsers();
       });
 
-      socket.on("user_joined", (user: User) => {
-        const systemMessage = {
-          id: Date.now(),
-          user_id: null, // 시스템 메시지의 user_id를 null으로 설정
-          message: `${user.nickname}님이 입장했습니다.`,
-        };
-        setMessages((prevMessages) => [...prevMessages, systemMessage]);
-        fetchParticipatingUsers();
-      });
-
       socket.on("system_message", (systemMessage: Message) => {
         setMessages((prevMessages) => [...prevMessages, systemMessage]);
       });
@@ -271,7 +212,7 @@ const ChatRoom = () => {
         socket.off("load_messages");
         socket.off("new_message");
         socket.off("user_left");
-        socket.off("user_joined");
+
         socket.off("system_message");
         socket.disconnect(); // 컴포넌트 언마운트 시 소켓 연결 해제
       };
@@ -382,52 +323,15 @@ const ChatRoom = () => {
         >
           ☰
         </div>
-        <UserList showUserList={showUserList}>
-          <div className="userlist__container">
-            <div className="cancel">
-              <button onClick={() => setShowUserList(false)}>X</button>
-            </div>
-            <div className="user__item__wrap">
-              {participatingUsers.map((user) => (
-                <div className="user__item" key={user.user_id}>
-                  <Image
-                    src={user.profile_image}
-                    alt="유저프로필"
-                    width={50}
-                    height={50}
-                  />
-                  <span>{user.nickname}</span>
-                  {user.user_id === chatroomInfo?.owner_id && (
-                    <span>(방장)</span>
-                  )}
-                </div>
-              ))}
-            </div>
-            {isOwner ? (
-              <div className="admin__actions">
-                <button
-                  className={styles.button__big}
-                  onClick={() => alert("공지 기능 미구현")}
-                >
-                  공지
-                </button>
-
-                <button
-                  className={styles.button__big}
-                  onClick={handleDeleteRoom}
-                >
-                  방 삭제
-                </button>
-              </div>
-            ) : (
-              <div className="admin__actions">
-                <button onClick={handleLeaveRoom}>
-                  <RxExit />
-                </button>
-              </div>
-            )}
-          </div>
-        </UserList>
+        <ChatRoomUserList
+          showUserList={showUserList}
+          participatingUsers={participatingUsers}
+          isOwner={isOwner}
+          chatroomInfo={chatroomInfo}
+          handleLeaveRoom={handleLeaveRoom}
+          handleDeleteRoom={handleDeleteRoom}
+          setShowUserList={setShowUserList}
+        />
       </div>
 
       <div className="messages">
@@ -448,7 +352,11 @@ const ChatRoom = () => {
             >
               {!isCurrentUser && messageUser && !isSystemMessage && (
                 <Image
-                  src={messageUser.profile_image}
+                  src={
+                    messageUser.profile_image.startsWith("/uploads/")
+                      ? messageUser.profile_image
+                      : minion
+                  }
                   alt="프로필"
                   className="profile__image"
                   width={40}

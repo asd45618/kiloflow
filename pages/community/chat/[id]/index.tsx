@@ -6,7 +6,7 @@ import styles from "../../../../styles/components.module.css";
 import styled from "styled-components";
 import socket from "../../../../lib/socket"; // 소켓 초기화 파일 import
 import { IoIosArrowBack } from "react-icons/io";
-import Button from "react-bootstrap/esm/Button";
+import { RxExit } from "react-icons/rx";
 
 interface UserListProps {
   showUserList: boolean;
@@ -77,24 +77,6 @@ const ChatContainer = styled.div`
       }
     }
   }
-  // .admin__actions {
-  //   display: flex;
-  //   justify-content: space-between;
-  //   button {
-  //     padding: 10px 20px;
-  //     border: none;
-  //     border-radius: 5px;
-  //     cursor: pointer;
-  //   }
-  //   .danger {
-  //     background-color: #ff0000;
-  //     color: #fff;
-  //   }
-  //   .primary {
-  //     background-color: #007bff;
-  //     color: #fff;
-  //   }
-  // }
 `;
 
 const UserList = styled.div<UserListProps>`
@@ -146,22 +128,31 @@ const UserList = styled.div<UserListProps>`
   }
 `;
 
-const MessageContainer = styled.div<{ isCurrentUser: boolean }>`
+const MessageContainer = styled.div<{
+  isCurrentUser: boolean;
+  isSystemMessage?: boolean;
+}>`
   display: flex;
   flex-direction: ${({ isCurrentUser }) =>
     isCurrentUser ? "row-reverse" : "row"};
   align-items: flex-end;
   margin-bottom: 10px;
+  justify-content: ${({ isSystemMessage }) =>
+    isSystemMessage ? "center" : "flex-start"};
+
   .message__content {
     max-width: 60%;
-    background-color: ${({ isCurrentUser }) =>
-      isCurrentUser ? "#dcf8c6" : "#fff"};
-    // border: 1px solid #ccc;
+    background-color: ${({ isCurrentUser, isSystemMessage }) =>
+      isSystemMessage ? "transparent" : isCurrentUser ? "#dcf8c6" : "#fff"};
     border-radius: 10px;
     padding: 10px;
     margin-left: ${({ isCurrentUser }) => (isCurrentUser ? "0" : "10px")};
     margin-right: ${({ isCurrentUser }) => (isCurrentUser ? "10px" : "0")};
     word-break: break-word;
+    text-align: ${({ isSystemMessage }) =>
+      isSystemMessage ? "center" : "left"};
+    font-weight: ${({ isSystemMessage }) =>
+      isSystemMessage ? "bold" : "normal"};
   }
   .profile__image {
     width: 40px;
@@ -177,7 +168,7 @@ const MessageContainer = styled.div<{ isCurrentUser: boolean }>`
 
 interface Message {
   id: number;
-  user_id: number;
+  user_id: number | null;
   message: string;
 }
 
@@ -248,6 +239,30 @@ const ChatRoom = () => {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
       });
 
+      socket.on("user_left", (user: User) => {
+        const systemMessage = {
+          id: Date.now(),
+          user_id: null, // 시스템 메시지의 user_id를 null으로 설정
+          message: `${user.nickname}님이 나갔습니다.`,
+        };
+        setMessages((prevMessages) => [...prevMessages, systemMessage]);
+        fetchParticipatingUsers();
+      });
+
+      socket.on("user_joined", (user: User) => {
+        const systemMessage = {
+          id: Date.now(),
+          user_id: null, // 시스템 메시지의 user_id를 null으로 설정
+          message: `${user.nickname}님이 입장했습니다.`,
+        };
+        setMessages((prevMessages) => [...prevMessages, systemMessage]);
+        fetchParticipatingUsers();
+      });
+
+      socket.on("system_message", (systemMessage: Message) => {
+        setMessages((prevMessages) => [...prevMessages, systemMessage]);
+      });
+
       checkIfOwner();
       fetchChatroomInfo();
       fetchParticipatingUsers();
@@ -255,6 +270,9 @@ const ChatRoom = () => {
       return () => {
         socket.off("load_messages");
         socket.off("new_message");
+        socket.off("user_left");
+        socket.off("user_joined");
+        socket.off("system_message");
         socket.disconnect(); // 컴포넌트 언마운트 시 소켓 연결 해제
       };
     }
@@ -296,6 +314,34 @@ const ChatRoom = () => {
         message,
       });
       setMessage("");
+    }
+  };
+
+  const handleLeaveRoom = async () => {
+    if (!currentUser) {
+      alert("유효하지 않은 사용자입니다.");
+      return;
+    }
+
+    if (confirm("채팅방을 나가시겠습니까?")) {
+      const res = await fetch(`/api/community/join`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatroom_id: roomId,
+          user_id: currentUser.user_id,
+        }),
+      });
+
+      if (res.ok) {
+        socket.emit("leave_room", {
+          roomId,
+          user: currentUser,
+        });
+        router.push("/community/list");
+      }
     }
   };
 
@@ -375,7 +421,9 @@ const ChatRoom = () => {
               </div>
             ) : (
               <div className="admin__actions">
-                <button className={styles.button__big}>채팅방나가기</button>
+                <button onClick={handleLeaveRoom}>
+                  <RxExit />
+                </button>
               </div>
             )}
           </div>
@@ -387,12 +435,18 @@ const ChatRoom = () => {
           const isCurrentUser = currentUser
             ? msg.user_id === currentUser.user_id
             : false;
+          const isSystemMessage = msg.user_id === null;
           const messageUser = participatingUsers.find(
             (user) => user.user_id === msg.user_id
           );
+
           return (
-            <MessageContainer key={msg.id} isCurrentUser={isCurrentUser}>
-              {!isCurrentUser && messageUser && (
+            <MessageContainer
+              key={msg.id}
+              isCurrentUser={isCurrentUser}
+              isSystemMessage={isSystemMessage}
+            >
+              {!isCurrentUser && messageUser && !isSystemMessage && (
                 <Image
                   src={messageUser.profile_image}
                   alt="프로필"
@@ -402,13 +456,12 @@ const ChatRoom = () => {
                 />
               )}
               <div className="message__content">
-                {!isCurrentUser && messageUser && (
-                  <div className="nickname">
-                    {messageUser.nickname}
-                    <p>{messageUser.profile_image}</p>
-                  </div>
+                {!isCurrentUser && messageUser && !isSystemMessage && (
+                  <div className="nickname">{messageUser.nickname}</div>
                 )}
-                <div>{msg.message}</div>
+                <div className={isSystemMessage ? styles.systemMessage : ""}>
+                  {msg.message}
+                </div>
               </div>
             </MessageContainer>
           );

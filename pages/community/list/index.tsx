@@ -1,5 +1,5 @@
 // pages/community/list/index.tsx
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Image from "next/image";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,6 +11,13 @@ import { useRouter } from "next/router";
 import communityThumb from "../../../public/communityThumb.png";
 import { HiPlusSm } from "react-icons/hi";
 import { IoChatbubble } from "react-icons/io5";
+import { TbH1 } from "react-icons/tb";
+import dynamic from "next/dynamic";
+
+const ChatroomList = dynamic(
+  () => import("../../../components/community/chatroomList"),
+  { suspense: true }
+);
 
 const CommunityListWrapper = styled.div`
   position: relative;
@@ -232,35 +239,14 @@ const CommunityList = () => {
           </div>
         </Link>
       </div>
-      {chatrooms.map((chatroom) => (
-        <div
-          className="list__info"
-          key={chatroom.id}
-          onClick={() => handleChatroomClick(chatroom)}
-        >
-          <div className="info__img">
-            <Image
-              src={chatroom.image_url || communityThumb}
-              alt="thumb"
-              width={100}
-              height={100}
-            />
-          </div>
-          <div className="info__text__wrapper">
-            <div className="text__top">
-              <div className="top__title">{chatroom.name}</div>
-              <div className="top__num">
-                {chatroomMemberCounts[chatroom.id] || 0}/{chatroom.max_members}
-              </div>
-            </div>
-            {chatroom.tags && chatroom.tags.trim() !== "" && (
-              <div className="text__bottom">
-                <p>{chatroom.tags}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      ))}
+      <Suspense fallback={<h1>Loading chatrooms...</h1>}>
+        <ChatroomList
+          chatrooms={chatrooms}
+          joinedChatrooms={joinedChatrooms}
+          chatroomMemberCounts={chatroomMemberCounts}
+          handleChatroomClick={handleChatroomClick}
+        />
+      </Suspense>
       {showModal && (
         <CommunityModal
           chatroom={selectedChatroom}

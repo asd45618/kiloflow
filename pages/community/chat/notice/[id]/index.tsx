@@ -3,8 +3,11 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/router";
 import styled from "styled-components";
+import styles from "../../../../../styles/components.module.css";
+import { IoIosArrowBack } from "react-icons/io";
 
 const Container = styled.div`
+  height: 100vh;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -12,6 +15,7 @@ const Container = styled.div`
 `;
 
 const Form = styled.form`
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
   width: 300px;
@@ -20,24 +24,6 @@ const Form = styled.form`
   }
   label {
     margin-bottom: 5px;
-  }
-  input,
-  textarea {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 100%;
-  }
-  button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background: #0070f3;
-    color: #fff;
-    cursor: pointer;
-    &:hover {
-      background: #005bb5;
-    }
   }
 `;
 
@@ -71,11 +57,17 @@ const Notice = () => {
 
   return (
     <Container>
-      <h1>공지 쓰기</h1>
+      <div className={styles.top}>
+        <button className={styles.backButton} onClick={() => router.back()}>
+          <IoIosArrowBack />
+        </button>
+        <h2 className={styles.h2}>채팅방 설정</h2>
+      </div>
       <Form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="title">제목</label>
           <input
+            className={styles.input__big}
             id="title"
             type="text"
             value={title}
@@ -87,6 +79,7 @@ const Notice = () => {
         <div className="form-group">
           <label htmlFor="content">내용</label>
           <textarea
+            className={styles.input__big}
             id="content"
             value={content}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
@@ -94,7 +87,9 @@ const Notice = () => {
             }
           />
         </div>
-        <button type="submit">저장</button>
+        <button type="submit" className={styles.button__big}>
+          저장
+        </button>
       </Form>
     </Container>
   );

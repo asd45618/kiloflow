@@ -1,4 +1,3 @@
-// pages/community/chat/[id]/index.tsx
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -142,12 +141,14 @@ interface Chatroom {
 interface Notice {
   title: string;
   content: string;
+  created_at: string;
 }
 
 const ChatRoom = () => {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const { id: roomId } = router.query;
+  const { id: roomIdString } = router.query;
+  const roomId = parseInt(roomIdString as string, 10);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isOwner, setIsOwner] = useState(false);
@@ -338,7 +339,12 @@ const ChatRoom = () => {
 
       <div className="messages">
         {latestNotice && (
-          <Notice title={latestNotice.title} content={latestNotice.content} />
+          <Notice
+            id={roomId}
+            title={latestNotice.title}
+            content={latestNotice.content}
+            createdAt={latestNotice.created_at}
+          />
         )}
         {messages.map((msg) => {
           const isCurrentUser = currentUser

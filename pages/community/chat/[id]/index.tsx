@@ -203,16 +203,6 @@ const ChatRoom = () => {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
       });
 
-      socket.on("user_left", (user: User) => {
-        const systemMessage = {
-          id: Date.now(),
-          user_id: null, // 시스템 메시지의 user_id를 null으로 설정
-          message: `${user.nickname}님이 나갔습니다.`,
-        };
-        setMessages((prevMessages) => [...prevMessages, systemMessage]);
-        fetchParticipatingUsers();
-      });
-
       socket.on("system_message", (systemMessage: Message) => {
         setMessages((prevMessages) => [...prevMessages, systemMessage]);
       });
@@ -313,11 +303,39 @@ const ChatRoom = () => {
       });
 
       if (res.ok) {
+        fetchParticipatingUsers();
         socket.emit("leave_room", {
           roomId,
           user: currentUser,
         });
         router.push("/community/list");
+      }
+    }
+  };
+
+  const kickUser = async (userId: number, userNickname: string) => {
+    if (confirm(`${userId}님을 강제로 퇴장시키겠습니까?`)) {
+      const res = await fetch(`/api/community/join`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatroom_id: roomId,
+          user_id: userId,
+          action: "kick", // 강퇴 액션
+        }),
+      });
+
+      if (res.ok) {
+        fetchParticipatingUsers();
+        socket.emit("kick_room", {
+          roomId,
+          user: { userId: userId, nickname: userNickname },
+        });
+        router.push("/community/list");
+      } else {
+        alert("사용자 강퇴에 실패했습니다.");
       }
     }
   };
@@ -355,6 +373,7 @@ const ChatRoom = () => {
           chatroomInfo={chatroomInfo}
           handleLeaveRoom={handleLeaveRoom}
           setShowUserList={setShowUserList}
+          kickUser={kickUser} // 강퇴 기능 추가
         />
       </div>
       {latestNotice && (

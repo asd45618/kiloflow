@@ -124,6 +124,41 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
         }
       });
 
+      socket.on("kick_room", async ({ roomId, user }) => {
+        try {
+          console.log(`User ${user.userId} kicked room ${roomId}`);
+          socket.leave(roomId);
+
+          const systemMessage = await prisma.chatMessages.create({
+            data: {
+              chatroom_id: Number(roomId),
+              user_id: null,
+              message: `${user.nickname}님이 퇴장되었습니다.`,
+            },
+          });
+
+          io.to(roomId).emit("new_message", systemMessage);
+
+          // 사용자의 입장 메시지 삭제
+          await prisma.chatMessages.deleteMany({
+            where: {
+              chatroom_id: Number(roomId),
+              user_id: null,
+              message: `${user.nickname}님이 입장했습니다.`,
+            },
+          });
+
+          await prisma.chatroom_members.deleteMany({
+            where: {
+              chatroom_id: Number(roomId),
+              user_id: Number(user.userId),
+            },
+          });
+        } catch (error) {
+          console.error("Error in leave_room:", error);
+        }
+      });
+
       socket.on("disconnect", () => {
         console.log("Socket disconnected:", socket.id);
       });

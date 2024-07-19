@@ -13,6 +13,7 @@ interface UserListProps {
   chatroomInfo: Chatroom | null;
   handleLeaveRoom: () => void;
   setShowUserList: (value: boolean) => void;
+  kickUser: (userId: number, userNickname: string) => void; // 강퇴 기능 추가
 }
 
 interface User {
@@ -62,6 +63,15 @@ const UserListContainer = styled.div<{ showUserList: boolean }>`
           border: 1px solid #ddd;
           margin-right: 5px;
         }
+        button.kick {
+          margin-left: auto;
+          background: red;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          padding: 5px 10px;
+          cursor: pointer;
+        }
       }
     }
     .admin__actions {
@@ -81,6 +91,7 @@ const ChatRoomUserList: React.FC<UserListProps> = ({
   chatroomInfo,
   handleLeaveRoom,
   setShowUserList,
+  kickUser, //강퇴 기능 추가
 }) => {
   const router = useRouter();
 
@@ -109,6 +120,14 @@ const ChatRoomUserList: React.FC<UserListProps> = ({
               />
               <span>{user.nickname}</span>
               {user.user_id === chatroomInfo?.owner_id && <span>(방장)</span>}
+              {isOwner && user.user_id !== chatroomInfo?.owner_id && (
+                <button
+                  className="kick"
+                  onClick={() => kickUser(user.user_id, user.nickname)}
+                >
+                  강퇴
+                </button>
+              )}
             </div>
           ))}
         </div>

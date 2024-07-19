@@ -11,11 +11,21 @@ const NoticeContainer = styled.div`
   .subject {
     display: flex;
     align-items: center;
+    h4 {
+      padding: 5px 10px;
+    }
+  }
+  .content {
+    padding: 0 10px;
   }
   .actions {
-    margin-top: 10px;
-    button {
-      margin-right: 10px;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 40px;
+    p {
+      line-height: 1;
+      margin-top: 10px;
     }
   }
 `;
@@ -84,7 +94,7 @@ const Notice: React.FC<NoticeProps> = ({ id, title, content, createdAt }) => {
         <TbSpeakerphone />
         <h4>{title}</h4>
       </div>
-      {isOpen && <p>{content}</p>}
+      {isOpen && <p className="content">{content}</p>}
       {isOpen && (
         <div className="actions">
           <button
@@ -95,6 +105,7 @@ const Notice: React.FC<NoticeProps> = ({ id, title, content, createdAt }) => {
           >
             공지 닫기
           </button>
+          <p>|</p>
           <button
             onClick={(e) => {
               e.stopPropagation();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import communityThumb from "../../../../public/communityThumb.png";
@@ -6,6 +6,7 @@ import styles from "../../../../styles/components.module.css";
 import styled from "styled-components";
 import socket from "../../../../lib/socket"; // 소켓 초기화 파일 import
 import { IoIosArrowBack } from "react-icons/io";
+
 import ChatRoomUserList from "../../../../components/community/chatroomUserList";
 import Notice from "../../../../components/community/notice";
 
@@ -49,7 +50,7 @@ const ChatContainer = styled.div`
   }
   .messages {
     // flex: 1;
-    height: 56vh;
+    height: 55vh;
     overflow-y: scroll;
     padding: 10px;
     display: flex;
@@ -157,6 +158,7 @@ const ChatRoom = () => {
   const [participatingUsers, setParticipatingUsers] = useState<User[]>([]);
   const [showUserList, setShowUserList] = useState(false);
   const [latestNotice, setLatestNotice] = useState<Notice | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -228,6 +230,12 @@ const ChatRoom = () => {
       };
     }
   }, [roomId, currentUser]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   const checkIfOwner = async () => {
     const res = await fetch(
@@ -386,6 +394,7 @@ const ChatRoom = () => {
             </MessageContainer>
           );
         })}
+        <div ref={messagesEndRef} />
       </div>
       <div className="input__container">
         <input

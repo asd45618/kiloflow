@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 
 const FooterWrapper = styled.div`
+  border-bottom-left-radius: 90px;
+  border-bottom-right-radius: 90px;
   left: 0;
   width: 100%;
   font-size: 32px;

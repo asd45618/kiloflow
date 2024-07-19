@@ -7,7 +7,7 @@ import Picker from "../Layout/Picker2";
 
 const ProfileModifyBlock = styled.div`
   max-width: 345px;
-  margin: 60px auto;
+  margin: 20px auto;
   padding: 20px;
   text-align: center;
 `;

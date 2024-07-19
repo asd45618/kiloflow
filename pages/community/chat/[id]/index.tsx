@@ -49,7 +49,7 @@ const ChatContainer = styled.div<{ noticeHeight: number }>`
     }
   }
   .messages {
-    height: calc(50vh - ${({ noticeHeight }) => noticeHeight}px);
+    height: calc(52vh - ${({ noticeHeight }) => noticeHeight}px);
     overflow-y: scroll;
     padding: 10px;
 
@@ -275,7 +275,11 @@ const ChatRoom = () => {
   const fetchLatestNotice = async () => {
     const res = await fetch(`/api/community/latest-notice?roomId=${roomId}`);
     const data = await res.json();
-    setLatestNotice(data);
+    if (data) {
+      setLatestNotice(data);
+    } else {
+      setLatestNotice(null);
+    }
   };
 
   const sendMessage = () => {

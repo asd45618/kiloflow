@@ -95,7 +95,11 @@ const Notice: React.FC<NoticeProps> = ({
 
   useEffect(() => {
     if (noticeRef.current) {
-      onHeightChange(noticeRef.current.clientHeight);
+      if (isVisible) {
+        onHeightChange(noticeRef.current.clientHeight);
+      } else {
+        onHeightChange(0);
+      }
     }
   }, [isOpen, isVisible, noticeRef, onHeightChange]);
 

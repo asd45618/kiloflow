@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { TbSpeakerphone } from "react-icons/tb";
 
@@ -35,9 +35,18 @@ interface NoticeProps {
   title: string;
   content: string;
   createdAt: string;
+  noticeRef: React.RefObject<HTMLDivElement>; // Ref 속성 추가
+  onHeightChange: (height: number) => void; // 높이 변화 핸들러 추가
 }
 
-const Notice: React.FC<NoticeProps> = ({ id, title, content, createdAt }) => {
+const Notice: React.FC<NoticeProps> = ({
+  id,
+  title,
+  content,
+  createdAt,
+  noticeRef,
+  onHeightChange, // 높이 변화 핸들러 추가
+}) => {
   const storageKey = `notice-${id}`;
   const savedState = localStorage.getItem(storageKey);
   const initialState = savedState
@@ -84,12 +93,18 @@ const Notice: React.FC<NoticeProps> = ({ id, title, content, createdAt }) => {
     }
   }, [isOpen, isVisible, storageKey, createdAt, lastCreatedAt]);
 
+  useEffect(() => {
+    if (noticeRef.current) {
+      onHeightChange(noticeRef.current.clientHeight);
+    }
+  }, [isOpen, isVisible, noticeRef, onHeightChange]);
+
   if (!isVisible) {
     return null;
   }
 
   return (
-    <NoticeContainer onClick={() => setIsOpen(!isOpen)}>
+    <NoticeContainer ref={noticeRef} onClick={() => setIsOpen(!isOpen)}>
       <div className="subject">
         <TbSpeakerphone />
         <h4>{title}</h4>

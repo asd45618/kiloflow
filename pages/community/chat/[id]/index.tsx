@@ -12,7 +12,7 @@ import Notice from "../../../../components/community/notice";
 
 import minion from "../../../../public/minion1.png";
 
-const ChatContainer = styled.div`
+const ChatContainer = styled.div<{ noticeHeight: number }>`
   overflow: hidden;
   position: relative;
   display: flex;
@@ -49,10 +49,10 @@ const ChatContainer = styled.div`
     }
   }
   .messages {
-    // flex: 1;
-    height: 55vh;
+    height: calc(50vh - ${({ noticeHeight }) => noticeHeight}px);
     overflow-y: scroll;
     padding: 10px;
+
     display: flex;
     flex-direction: column;
   }
@@ -159,6 +159,8 @@ const ChatRoom = () => {
   const [showUserList, setShowUserList] = useState(false);
   const [latestNotice, setLatestNotice] = useState<Notice | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const noticeRef = useRef<HTMLDivElement | null>(null); // 공지 Ref 추가
+  const [noticeHeight, setNoticeHeight] = useState(0);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -237,6 +239,12 @@ const ChatRoom = () => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (noticeRef.current) {
+      setNoticeHeight(noticeRef.current.clientHeight);
+    }
+  }, [latestNotice, noticeHeight]); // 높이 변화를 추적할 변수 추가
+
   const checkIfOwner = async () => {
     const res = await fetch(
       `/api/community/current-chatroom-info?roomId=${roomId}&action=info`
@@ -311,7 +319,7 @@ const ChatRoom = () => {
   };
 
   return (
-    <ChatContainer>
+    <ChatContainer noticeHeight={noticeHeight}>
       <div className="top">
         <div className="back" onClick={() => router.back()}>
           <IoIosArrowBack />
@@ -345,16 +353,17 @@ const ChatRoom = () => {
           setShowUserList={setShowUserList}
         />
       </div>
-
+      {latestNotice && (
+        <Notice
+          id={roomId}
+          title={latestNotice.title}
+          content={latestNotice.content}
+          createdAt={latestNotice.created_at}
+          noticeRef={noticeRef} // 공지 Ref 전달
+          onHeightChange={setNoticeHeight} // 높이 변화 핸들러 전달
+        />
+      )}
       <div className="messages">
-        {latestNotice && (
-          <Notice
-            id={roomId}
-            title={latestNotice.title}
-            content={latestNotice.content}
-            createdAt={latestNotice.created_at}
-          />
-        )}
         {messages.map((msg) => {
           const isCurrentUser = currentUser
             ? msg.user_id === currentUser.user_id

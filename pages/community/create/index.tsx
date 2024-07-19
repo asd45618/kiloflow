@@ -7,11 +7,10 @@ import communityThumb from "../../../public/communityThumb.png";
 import styles from "../../../styles/components.module.css";
 
 const FormWrapper = styled.div`
-  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 10px 20px;
   form {
     width: 100%;
     max-width: 500px;

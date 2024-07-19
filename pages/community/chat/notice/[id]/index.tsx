@@ -7,8 +7,7 @@ import styles from "../../../../../styles/components.module.css";
 import { IoIosArrowBack } from "react-icons/io";
 
 const Container = styled.div`
-  height: 100vh;
-  padding: 20px;
+  padding: 10px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -61,7 +60,7 @@ const Notice = () => {
         <button className={styles.backButton} onClick={() => router.back()}>
           <IoIosArrowBack />
         </button>
-        <h2 className={styles.h2}>채팅방 설정</h2>
+        <h2 className={styles.h2}>공지 작성</h2>
       </div>
       <Form onSubmit={handleSubmit}>
         <div className="form-group">

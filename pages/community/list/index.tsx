@@ -20,6 +20,7 @@ const ChatroomList = dynamic(
 );
 
 const CommunityListWrapper = styled.div`
+  padding: 0 20px;
   position: relative;
   .top {
     display: flex;

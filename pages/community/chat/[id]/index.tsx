@@ -12,11 +12,11 @@ import Notice from "../../../../components/community/notice";
 import minion from "../../../../public/minion1.png";
 
 const ChatContainer = styled.div`
-  overflow-y: hidden;
+  overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+
   .top {
     display: flex;
     justify-content: space-between;
@@ -48,7 +48,8 @@ const ChatContainer = styled.div`
     }
   }
   .messages {
-    flex: 1;
+    // flex: 1;
+    height: 56vh;
     overflow-y: scroll;
     padding: 10px;
     display: flex;
@@ -56,7 +57,7 @@ const ChatContainer = styled.div`
   }
   .input__container {
     display: flex;
-    padding: 10px;
+    padding: 10px 10px 0;
     input {
       flex: 1;
       padding: 10px;

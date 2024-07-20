@@ -19,7 +19,9 @@ model users {
   chatroomMembers        chatroom_members[]
   chatMessages           chatMessages[]
   chatrooms              chatrooms[]
-  
+  recommends             recommend[]
+  userFoodList           userFoodList[]
+
   @@index([user_id])
 }
 
@@ -39,15 +41,22 @@ model UserProfile {
   @@index([user_id])
 }
 
-model foodList {
-  id            Int      @id @default(autoincrement())
+model userFoodList {
+  food_id       Int      @id @default(autoincrement())
+  user_id       Int
   menu          String      
   calorie       Int
   carb          Int
   pro           Int
   fat           Int
   img           String
-  rcp_seq       String  @unique
+  food_seq      String   @unique
+  recommends    recommend[]
+
+  user          users    @relation(fields: [user_id], references: [user_id])
+
+  @@index([user_id])
+  @@index([food_id])
 }
 
 model chatrooms {
@@ -105,4 +114,17 @@ model notices {
   chatroom    chatrooms @relation(fields: [chatroom_id], references: [id], onDelete: Cascade)
 
   @@index([chatroom_id])
+}
+
+model recommend {
+  id          Int           @id @default(autoincrement())
+  user_id     Int
+  food_id     Int
+  recommend   String
+
+  user        users         @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  food        userFoodList  @relation(fields: [food_id], references: [food_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([food_id])
 }

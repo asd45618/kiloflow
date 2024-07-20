@@ -67,6 +67,7 @@ interface ExerciseItem {
 
 export default function ExerciseList() {
   const [exerciseList, setExerciseList] = useState<ExerciseItem[]>([]);
+  const [searchList, setSearchList] = useState<ExerciseItem[]>([]);
   const [keyWord, setKeyWord] = useState('');
 
   const changeKeyWord = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +76,7 @@ export default function ExerciseList() {
 
   const search = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchList(exerciseList.filter((item) => item.name.includes(keyWord)));
   };
 
   useEffect(() => {
@@ -94,6 +96,10 @@ export default function ExerciseList() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    !keyWord ? setSearchList([]) : '';
+  }, [keyWord]);
+
   return (
     <ExerciseListWrapper>
       <div className='search'>
@@ -102,25 +108,45 @@ export default function ExerciseList() {
           <FontAwesomeIcon icon={faMagnifyingGlass} onClick={search} />
         </form>
       </div>
-      {exerciseList.map((exercise: any) => (
-        <div className='exercise__info' key={exercise.id}>
-          <Link
-            href={{
-              pathname: `/exercise/detail/${exercise.id}`,
-              query: {
-                data: JSON.stringify(exercise),
-              },
-            }}
-            as={`/exercise/detail/${exercise.id}`}
-          >
-            {exercise.name}
-          </Link>
-          <div>{exercise.MET}MET</div>
-          <div className='detail__btn'>
-            <FontAwesomeIcon icon={faSquarePlus} />
-          </div>
-        </div>
-      ))}
+      {!searchList.length
+        ? exerciseList.map((exercise: any) => (
+            <div className='exercise__info' key={exercise.id}>
+              <Link
+                href={{
+                  pathname: `/exercise/detail/${exercise.id}`,
+                  query: {
+                    data: JSON.stringify(exercise),
+                  },
+                }}
+                as={`/exercise/detail/${exercise.id}`}
+              >
+                {exercise.name}
+              </Link>
+              <div>{exercise.MET}MET</div>
+              <div className='detail__btn'>
+                <FontAwesomeIcon icon={faSquarePlus} />
+              </div>
+            </div>
+          ))
+        : searchList.map((exercise: any) => (
+            <div className='exercise__info' key={exercise.id}>
+              <Link
+                href={{
+                  pathname: `/exercise/detail/${exercise.id}`,
+                  query: {
+                    data: JSON.stringify(exercise),
+                  },
+                }}
+                as={`/exercise/detail/${exercise.id}`}
+              >
+                {exercise.name}
+              </Link>
+              <div>{exercise.MET}MET</div>
+              <div className='detail__btn'>
+                <FontAwesomeIcon icon={faSquarePlus} />
+              </div>
+            </div>
+          ))}
     </ExerciseListWrapper>
   );
 }

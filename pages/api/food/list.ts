@@ -27,15 +27,16 @@ export default async function handler(
       img: api.ATT_FILE_NO_MAIN,
     }));
 
-    const foodList = await prisma.foodList.findMany();
+    const foodList = await prisma.userFoodList.findMany();
     const formattedFoodList = foodList.map((food) => ({
-      id: food.id,
+      id: food.food_id,
       name: food.menu,
       protein: food.pro,
       carbohydrate: food.carb,
       fat: food.fat,
       calorie: food.calorie,
       img: food.img,
+      user_id: food.user_id,
     }));
 
     const allFoodList = [...apiData, ...formattedFoodList];

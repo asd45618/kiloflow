@@ -32,7 +32,7 @@ export default async function handler(
 
     return res.status(200).json(apiData);
   } catch (error) {
-    console.error('데이터베이스에서 음식 목록을 가져오는 중 에러:', error);
+    console.error('데이터베이스에서 운동 목록을 가져오는 중 에러:', error);
     return res.status(500).json({ message: '내부 서버 오류' });
   }
 }

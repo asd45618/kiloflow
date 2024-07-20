@@ -175,7 +175,7 @@ const Join = () => {
   const handleImageSelect = (src: string) => {
     setProfilePreview(src);
     setProfileImage(src);
-    setImageSelectModalIsOpen(false);
+
     setShowButtons(false);
   };
 
@@ -245,6 +245,7 @@ const Join = () => {
                 {showButtons && (
                   <div className="buttonContainer">
                     <button
+                      type="button"
                       onClick={() => setImageSelectModalIsOpen(true)}
                       className="upload__label"
                     >
@@ -371,6 +372,7 @@ const Join = () => {
         isOpen={imageSelectModalIsOpen}
         onRequestClose={() => setImageSelectModalIsOpen(false)}
         onSelectImage={handleImageSelect}
+        onConfirm={() => setImageSelectModalIsOpen(false)}
       />
     </JoinBlock>
   );

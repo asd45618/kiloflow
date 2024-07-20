@@ -41,7 +41,8 @@ export default async function handler(
     // Multer 미들웨어 실행
     await runMiddleware(req, res, upload.single("profile_image"));
 
-    const { email, nickname, currentPassword, newPassword } = req.body;
+    const { email, nickname, currentPassword, newPassword, profile_image_url } =
+      req.body;
 
     if (!email || !nickname) {
       return res
@@ -73,7 +74,7 @@ export default async function handler(
     // 프로필 이미지 경로 설정
     const profileImageUrl = req.file
       ? `/uploads/${req.file.filename}`
-      : user.profile_image;
+      : profile_image_url || user.profile_image;
 
     // 유저 정보 업데이트
     const updatedUser = await prisma.users.update({
@@ -88,8 +89,6 @@ export default async function handler(
     return res.status(200).json(updatedUser);
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({ message: "개인정보 수정이 실패했습니다람쥐." });
+    return res.status(500).json({ message: "개인정보 수정이 실패했습니다." });
   }
 }

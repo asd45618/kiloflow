@@ -404,11 +404,12 @@ const ChatRoom = () => {
             >
               {!isCurrentUser && messageUser && !isSystemMessage && (
                 <Image
-                  src={
-                    messageUser.profile_image.startsWith("/uploads/")
-                      ? messageUser.profile_image
-                      : minion
-                  }
+                  src={messageUser.profile_image}
+                  // src={
+                  //   messageUser.profile_image.startsWith("/uploads/")
+                  //     ? messageUser.profile_image
+                  //     : minion
+                  // }
                   alt="프로필"
                   className="profile__image"
                   width={40}

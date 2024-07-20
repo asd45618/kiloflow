@@ -111,7 +111,7 @@ const PersonalInfo = () => {
   const handleImageSelect = (src: string) => {
     setProfilePreview(src);
     setProfileImage(src);
-    setImageSelectModalIsOpen(false);
+    setShowButtons(false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,7 +130,11 @@ const PersonalInfo = () => {
     const formData = new FormData();
     formData.append("email", currentUser.email);
     formData.append("nickname", nickname);
-    formData.append("profile_image", profileImage);
+    if (typeof profileImage === "string") {
+      formData.append("profile_image_url", profileImage);
+    } else {
+      formData.append("profile_image", profileImage);
+    }
     if (currentPassword) formData.append("currentPassword", currentPassword);
     if (newPassword) formData.append("newPassword", newPassword);
 
@@ -142,7 +146,7 @@ const PersonalInfo = () => {
 
       if (res.ok) {
         const data = await res.json();
-        setCurrentUser(data);
+        setCurrentUser(data.user);
         setError("");
         window.alert("개인정보 수정이 완료되었습니다.");
         router.reload(); // 페이지 새로고침으로 변경사항 반영
@@ -154,6 +158,26 @@ const PersonalInfo = () => {
       setError("An unexpected error occurred");
     }
   };
+
+  const handleOutsideClick = (e: MouseEvent) => {
+    if (
+      !(e.target as HTMLElement).closest(".buttonContainer") &&
+      !(e.target as HTMLElement).closest(".profilePreview")
+    ) {
+      setShowButtons(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showButtons) {
+      document.addEventListener("click", handleOutsideClick);
+    } else {
+      document.removeEventListener("click", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, [showButtons]);
 
   if (!currentUser) return <div>Loading...</div>;
 
@@ -188,6 +212,7 @@ const PersonalInfo = () => {
                 {showButtons && (
                   <div className="buttonContainer">
                     <button
+                      type="button"
                       onClick={() => setImageSelectModalIsOpen(true)}
                       className="upload__label"
                     >
@@ -288,6 +313,7 @@ const PersonalInfo = () => {
         isOpen={imageSelectModalIsOpen}
         onRequestClose={() => setImageSelectModalIsOpen(false)}
         onSelectImage={handleImageSelect}
+        onConfirm={() => setImageSelectModalIsOpen(false)}
       />
     </PersonalInfoBlock>
   );

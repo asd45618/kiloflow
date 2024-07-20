@@ -33,12 +33,14 @@ type ProfileImageModalProps = {
   isOpen: boolean;
   onRequestClose: () => void;
   onSelectImage: (src: string) => void;
+  onConfirm: () => void;
 };
 
 const ProfileImageModal: React.FC<ProfileImageModalProps> = ({
   isOpen,
   onRequestClose,
   onSelectImage,
+  onConfirm,
 }) => {
   return (
     <div className="modal__wrap">
@@ -62,6 +64,7 @@ const ProfileImageModal: React.FC<ProfileImageModalProps> = ({
             </div>
           ))}
         </div>
+        <button onClick={onConfirm}>이미지 확인</button>
         <button onClick={onRequestClose}>닫기</button>
       </Modal>
     </div>

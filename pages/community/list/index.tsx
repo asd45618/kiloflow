@@ -1,5 +1,5 @@
 // pages/community/list/index.tsx
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Image from "next/image";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,31 +9,50 @@ import CommunityModal from "../../../components/community/communityModal";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import communityThumb from "../../../public/communityThumb.png";
+import { HiPlusSm } from "react-icons/hi";
+import { IoChatbubble } from "react-icons/io5";
+import { TbH1 } from "react-icons/tb";
+import dynamic from "next/dynamic";
+
+const ChatroomList = dynamic(
+  () => import("../../../components/community/chatroomList"),
+  { suspense: true }
+);
 
 const CommunityListWrapper = styled.div`
-  // height: 100vh;
+  padding: 0 20px;
   position: relative;
-  .search {
+  .top {
     display: flex;
+    justify-content: space-around;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    margin: 20px 0;
-    .dropdown-toggle {
-      background-color: inherit;
-      color: #000;
-      border: none;
+    .search {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin: 20px 0;
+      .dropdown-toggle {
+        background-color: inherit;
+        color: #000;
+        border: none;
+      }
+      .dropdown-menu {
+        min-width: 0;
+      }
+      input {
+        border-bottom: 1px solid #000;
+        outline: none;
+        background-color: inherit;
+      }
+      svg {
+        cursor: pointer;
+      }
     }
-    .dropdown-menu {
-      min-width: 0;
-    }
-    input {
-      border-bottom: 1px solid #000;
-      outline: none;
-      background-color: inherit;
-    }
-    svg {
-      cursor: pointer;
+    .create__chatroom {
+      align-items: center;
+      display: flex;
+      font-size: 24px;
     }
   }
   .list__info {
@@ -191,56 +210,44 @@ const CommunityList = () => {
 
   return (
     <CommunityListWrapper>
-      <div className="search">
-        <Dropdown onClick={(e) => e.preventDefault()}>
-          <Dropdown.Toggle variant="success" id="dropdown-basic">
-            {searchType}
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            <Dropdown.Item onClick={() => setSearchType("제목")}>
-              제목
-            </Dropdown.Item>
-            <Dropdown.Item onClick={() => setSearchType("태그")}>
-              태그
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <FontAwesomeIcon icon={faMagnifyingGlass} />
-      </div>
-      {chatrooms.map((chatroom) => (
-        <div
-          className="list__info"
-          key={chatroom.id}
-          onClick={() => handleChatroomClick(chatroom)}
-        >
-          <div className="info__img">
-            <Image
-              src={chatroom.image_url || communityThumb}
-              alt="thumb"
-              width={100}
-              height={100}
-            />
-          </div>
-          <div className="info__text__wrapper">
-            <div className="text__top">
-              <div className="top__title">{chatroom.name}</div>
-              <div className="top__num">
-                {chatroomMemberCounts[chatroom.id] || 0}/{chatroom.max_members}
-              </div>
-            </div>
-            {chatroom.tags && chatroom.tags.trim() !== "" && (
-              <div className="text__bottom">
-                <p>{chatroom.tags}</p>
-              </div>
-            )}
-          </div>
+      <div className="top">
+        <div className="search">
+          <Dropdown onClick={(e) => e.preventDefault()}>
+            <Dropdown.Toggle variant="success" id="dropdown-basic">
+              {searchType}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={() => setSearchType("제목")}>
+                제목
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => setSearchType("태그")}>
+                태그
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <FontAwesomeIcon icon={faMagnifyingGlass} />
         </div>
-      ))}
+
+        <Link href="/community/create">
+          <div className="create__chatroom">
+            <HiPlusSm />
+            <IoChatbubble />
+          </div>
+        </Link>
+      </div>
+      <Suspense fallback={<h1>Loading chatrooms...</h1>}>
+        <ChatroomList
+          chatrooms={chatrooms}
+          joinedChatrooms={joinedChatrooms}
+          chatroomMemberCounts={chatroomMemberCounts}
+          handleChatroomClick={handleChatroomClick}
+        />
+      </Suspense>
       {showModal && (
         <CommunityModal
           chatroom={selectedChatroom}
@@ -248,12 +255,6 @@ const CommunityList = () => {
           onHide={() => setShowModal(false)}
         />
       )}
-
-      <Link href="/community/create">
-        <div className="create-chatroom">
-          <button>채팅방 생성하기</button>
-        </div>
-      </Link>
     </CommunityListWrapper>
   );
 };

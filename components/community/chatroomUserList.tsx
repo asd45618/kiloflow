@@ -12,7 +12,6 @@ interface UserListProps {
   isOwner: boolean;
   chatroomInfo: Chatroom | null;
   handleLeaveRoom: () => void;
-  //   handleDeleteRoom: () => void;
   setShowUserList: (value: boolean) => void;
 }
 
@@ -81,13 +80,16 @@ const ChatRoomUserList: React.FC<UserListProps> = ({
   isOwner,
   chatroomInfo,
   handleLeaveRoom,
-  //   handleDeleteRoom,
   setShowUserList,
 }) => {
   const router = useRouter();
 
   const handleSettingsClick = () => {
     router.push(`/community/chat/detailSetting/${chatroomInfo?.id}`);
+  };
+
+  const handleNoticeClick = () => {
+    router.push(`/community/chat/notice/${chatroomInfo?.id}`);
   };
 
   return (
@@ -115,7 +117,7 @@ const ChatRoomUserList: React.FC<UserListProps> = ({
             <button onClick={handleSettingsClick}>
               <IoSettingsOutline />
             </button>
-            <button onClick={() => alert("공지 기능 미구현")}>
+            <button onClick={handleNoticeClick}>
               <TbSpeakerphone />
             </button>
           </div>

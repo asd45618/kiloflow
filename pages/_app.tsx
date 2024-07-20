@@ -77,6 +77,7 @@ const RightLayoutWrapper = styled.div`
   width: 450px;
   height: 772px;
   border-radius: 50px;
+
   .dynamic {
     position: absolute;
     top: 8px;
@@ -100,14 +101,17 @@ const RightLayout = styled.div`
   max-width: 434px;
   height: 756px;
   background-color: #fcefef;
-  padding: 0 20px;
-  overflow-y: scroll;
+  padding: 0 5px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  p {
-    margin-bottom: 0;
-  }
+`;
+
+const ContentWrapper = styled.div`
+  overflow-y: scroll;
+  height: 100vh;
+
+  padding: 10px 0;
   &::-webkit-scrollbar {
     width: 3px;
   }
@@ -168,11 +172,15 @@ export default function App({ Component, pageProps }: AppProps) {
               {/* Other meta tags */}
             </Head>
             {path === "/auth/join" || path === "/auth/login" ? (
-              <Component {...pageProps} />
+              <ContentWrapper>
+                <Component {...pageProps} />
+              </ContentWrapper>
             ) : (
               <>
                 <Header />
-                <Component {...pageProps} />
+                <ContentWrapper>
+                  <Component {...pageProps} />
+                </ContentWrapper>
 
                 <Footer />
               </>

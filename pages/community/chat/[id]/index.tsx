@@ -1,4 +1,3 @@
-// pages/community/chat/[id]/index.tsx
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -8,15 +7,16 @@ import styled from "styled-components";
 import socket from "../../../../lib/socket"; // 소켓 초기화 파일 import
 import { IoIosArrowBack } from "react-icons/io";
 import ChatRoomUserList from "../../../../components/community/chatroomUserList";
+import Notice from "../../../../components/community/notice";
 
 import minion from "../../../../public/minion1.png";
 
 const ChatContainer = styled.div`
-  overflow-y: hidden;
+  overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+
   .top {
     display: flex;
     justify-content: space-between;
@@ -48,7 +48,8 @@ const ChatContainer = styled.div`
     }
   }
   .messages {
-    flex: 1;
+    // flex: 1;
+    height: 56vh;
     overflow-y: scroll;
     padding: 10px;
     display: flex;
@@ -56,7 +57,7 @@ const ChatContainer = styled.div`
   }
   .input__container {
     display: flex;
-    padding: 10px;
+    padding: 10px 10px 0;
     input {
       flex: 1;
       padding: 10px;
@@ -138,16 +139,24 @@ interface Chatroom {
   owner_id: number;
 }
 
+interface Notice {
+  title: string;
+  content: string;
+  created_at: string;
+}
+
 const ChatRoom = () => {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const { id: roomId } = router.query;
+  const { id: roomIdString } = router.query;
+  const roomId = parseInt(roomIdString as string, 10);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isOwner, setIsOwner] = useState(false);
   const [chatroomInfo, setChatroomInfo] = useState<Chatroom | null>(null);
   const [participatingUsers, setParticipatingUsers] = useState<User[]>([]);
   const [showUserList, setShowUserList] = useState(false);
+  const [latestNotice, setLatestNotice] = useState<Notice | null>(null);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -207,6 +216,7 @@ const ChatRoom = () => {
       checkIfOwner();
       fetchChatroomInfo();
       fetchParticipatingUsers();
+      fetchLatestNotice();
 
       return () => {
         socket.off("load_messages");
@@ -244,6 +254,12 @@ const ChatRoom = () => {
     );
     const data = await res.json();
     setParticipatingUsers(data);
+  };
+
+  const fetchLatestNotice = async () => {
+    const res = await fetch(`/api/community/latest-notice?roomId=${roomId}`);
+    const data = await res.json();
+    setLatestNotice(data);
   };
 
   const sendMessage = () => {
@@ -286,17 +302,6 @@ const ChatRoom = () => {
     }
   };
 
-  const handleDeleteRoom = async () => {
-    const res = await fetch(`/api/community/delete?roomId=${roomId}`, {
-      method: "DELETE",
-    });
-
-    if (res.ok) {
-      alert("채팅방이 삭제되었습니다.");
-      router.push("/community/list");
-    }
-  };
-
   return (
     <ChatContainer>
       <div className="top">
@@ -329,12 +334,19 @@ const ChatRoom = () => {
           isOwner={isOwner}
           chatroomInfo={chatroomInfo}
           handleLeaveRoom={handleLeaveRoom}
-          // handleDeleteRoom={handleDeleteRoom}
           setShowUserList={setShowUserList}
         />
       </div>
 
       <div className="messages">
+        {latestNotice && (
+          <Notice
+            id={roomId}
+            title={latestNotice.title}
+            content={latestNotice.content}
+            createdAt={latestNotice.created_at}
+          />
+        )}
         {messages.map((msg) => {
           const isCurrentUser = currentUser
             ? msg.user_id === currentUser.user_id

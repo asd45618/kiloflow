@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { useRouter } from "next/router";
+import socket from "../../lib/socket";
 
 const ModalWrapper = styled.div`
   display: block;
@@ -85,6 +86,10 @@ const CommunityModal: React.FC<CommunityModalProps> = ({
 
     if (joinRes.ok) {
       alert("채팅방에 참가하였습니다.");
+      socket.emit("send_entry_message", {
+        roomId: chatroom.id,
+        userId: user_id,
+      });
       onHide();
       router.push(`/community/chat/${chatroom.id}`);
     }

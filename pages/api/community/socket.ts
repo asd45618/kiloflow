@@ -100,14 +100,6 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
 
           io.to(roomId).emit("new_message", systemMessage);
 
-          await prisma.chatMessages.deleteMany({
-            where: {
-              chatroom_id: Number(roomId),
-              user_id: null,
-              message: `${user.nickname}님이 입장했습니다.`,
-            },
-          });
-
           await prisma.chatroom_members.deleteMany({
             where: {
               chatroom_id: Number(roomId),

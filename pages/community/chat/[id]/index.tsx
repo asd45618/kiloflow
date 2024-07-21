@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, KeyboardEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import communityThumb from "../../../../public/communityThumb.png";
@@ -341,6 +341,12 @@ const ChatRoom = () => {
     }
   };
 
+  const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      sendMessage();
+    }
+  };
+
   return (
     <ChatContainer noticeHeight={noticeHeight}>
       <div className="top">
@@ -432,6 +438,7 @@ const ChatRoom = () => {
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
         />
         <button onClick={sendMessage}>Send</button>
       </div>

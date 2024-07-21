@@ -99,24 +99,36 @@ const MessageContainer = styled.div<{
       isSystemMessage ? "transparent" : isCurrentUser ? "#dcf8c6" : "#fff"};
     border-radius: 10px;
     padding: 10px;
-    margin-left: ${({ isCurrentUser }) => (isCurrentUser ? "0" : "10px")};
-    margin-right: ${({ isCurrentUser }) => (isCurrentUser ? "10px" : "0")};
+    margin-left: ${({ isCurrentUser }) => (isCurrentUser ? "0" : "5px")};
+    margin-right: ${({ isCurrentUser }) => (isCurrentUser ? "5px" : "0")};
     word-break: break-word;
     text-align: ${({ isSystemMessage }) =>
       isSystemMessage ? "center" : "left"};
     font-weight: ${({ isSystemMessage }) =>
       isSystemMessage ? "bold" : "normal"};
+    position: relative;
   }
   .profile__image {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 1px solid #ddd;
+
     margin-right: 10px;
   }
   .nickname {
     margin-bottom: 5px;
     font-weight: bold;
+  }
+  .message__time {
+    text-align: center;
+    min-width: 70px;
+
+    font-size: 12px;
+    color: gray;
+    position: absolute;
+    bottom: 0;
+    right: ${({ isCurrentUser }) => (isCurrentUser ? "100%" : "auto")};
+    left: ${({ isCurrentUser }) => (isCurrentUser ? "auto" : "100%")};
   }
 `;
 
@@ -124,6 +136,7 @@ interface Message {
   id: number;
   user_id: number | null;
   message: string;
+  created_at: string; // 추가된 속성
 }
 
 interface User {
@@ -347,6 +360,16 @@ const ChatRoom = () => {
     }
   };
 
+  const formatTime = (time: string) => {
+    const date = new Date(time);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const period = hours >= 12 ? "오후" : "오전";
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes.toString().padStart(2, "0");
+    return `${period} ${formattedHours}:${formattedMinutes}`;
+  };
+
   return (
     <ChatContainer noticeHeight={noticeHeight}>
       <div className="top">
@@ -427,6 +450,11 @@ const ChatRoom = () => {
                 <div className={isSystemMessage ? styles.systemMessage : ""}>
                   {msg.message}
                 </div>
+                {!isSystemMessage && (
+                  <div className="message__time">
+                    {formatTime(msg.created_at)}
+                  </div>
+                )}
               </div>
             </MessageContainer>
           );

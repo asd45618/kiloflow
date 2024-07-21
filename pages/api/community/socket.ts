@@ -69,6 +69,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
               chatroom_id: Number(roomId),
               user_id: Number(userId),
               message,
+              created_at: new Date(),
             },
           });
           io.to(roomId).emit("new_message", newMessage);

@@ -11,6 +11,7 @@ import ChatRoomUserList from "../../../../components/community/chatroomUserList"
 import Notice from "../../../../components/community/notice";
 
 import minion from "../../../../public/minion1.png";
+import unknownUser from "../../../../public/unknownUser.jpg";
 
 const ChatContainer = styled.div<{ noticeHeight: number }>`
   overflow: hidden;
@@ -402,14 +403,9 @@ const ChatRoom = () => {
               isCurrentUser={isCurrentUser}
               isSystemMessage={isSystemMessage}
             >
-              {!isCurrentUser && messageUser && !isSystemMessage && (
+              {!isCurrentUser && !isSystemMessage && (
                 <Image
-                  src={messageUser.profile_image}
-                  // src={
-                  //   messageUser.profile_image.startsWith("/uploads/")
-                  //     ? messageUser.profile_image
-                  //     : minion
-                  // }
+                  src={messageUser ? messageUser.profile_image : unknownUser}
                   alt="프로필"
                   className="profile__image"
                   width={40}
@@ -417,8 +413,10 @@ const ChatRoom = () => {
                 />
               )}
               <div className="message__content">
-                {!isCurrentUser && messageUser && !isSystemMessage && (
-                  <div className="nickname">{messageUser.nickname}</div>
+                {!isCurrentUser && !isSystemMessage && (
+                  <div className="nickname">
+                    {messageUser ? messageUser.nickname : "알 수 없는 사용자"}
+                  </div>
                 )}
                 <div className={isSystemMessage ? styles.systemMessage : ""}>
                   {msg.message}

@@ -1,4 +1,3 @@
-// components/personal/ProfileModify.tsx
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import styles from "../../styles/components.module.css";
@@ -75,59 +74,43 @@ const calculateDailyCalories = (
   return { dailyCalories, totalDays: daysToLoseWeight };
 };
 
-const ProfileModify = () => {
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [height, setHeight] = useState<number>(160);
-  const [weight, setWeight] = useState<number>(60);
-  const [targetWeight, setTargetWeight] = useState<number>(60);
-  const [difficulty, setDifficulty] = useState<string>("쉬움");
+const ProfileModify = ({ currentUserProfile }: { currentUserProfile: any }) => {
+  const [height, setHeight] = useState<number>(currentUserProfile.height);
+  const [weight, setWeight] = useState<number>(currentUserProfile.weight);
+  const [targetWeight, setTargetWeight] = useState<number>(
+    currentUserProfile.target_weight
+  );
+  const [difficulty, setDifficulty] = useState<string>(
+    currentUserProfile.difficulty
+  );
   const [dailyCalories, setDailyCalories] = useState<number | null>(null);
   const [totalDays, setTotalDays] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        const res = await fetch("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setCurrentUser(data.user);
-          setHeight(data.userProfile.height);
-          setWeight(data.userProfile.weight);
-          setTargetWeight(data.userProfile.target_weight);
-          setDifficulty(data.userProfile.difficulty);
-          const bmr = calculateBMR(
-            data.userProfile.weight,
-            data.userProfile.height
-          );
-          const { dailyCalories, totalDays } = calculateDailyCalories(
-            data.userProfile.weight,
-            data.userProfile.target_weight,
-            data.userProfile.difficulty,
-            bmr
-          );
-          setDailyCalories(dailyCalories);
-          setTotalDays(totalDays);
-        } else {
-          localStorage.removeItem("token");
-          router.push("/auth/login");
-        }
-      } else {
-        router.push("/auth/login");
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
+    if (currentUserProfile) {
+      console.log("currnetUserProfile", currentUserProfile);
+      setHeight(currentUserProfile.height);
+      setWeight(currentUserProfile.weight);
+      setTargetWeight(currentUserProfile.target_weight);
+      setDifficulty(currentUserProfile.difficulty);
+      const bmr = calculateBMR(
+        currentUserProfile.weight,
+        currentUserProfile.height
+      );
+      const { dailyCalories, totalDays } = calculateDailyCalories(
+        currentUserProfile.weight,
+        currentUserProfile.target_weight,
+        currentUserProfile.difficulty,
+        bmr
+      );
+      setDailyCalories(dailyCalories);
+      setTotalDays(totalDays);
+    }
+  }, [currentUserProfile]);
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUserProfile) {
       const bmr = calculateBMR(weight, height);
       const { dailyCalories, totalDays } = calculateDailyCalories(
         weight,
@@ -151,7 +134,7 @@ const ProfileModify = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user_id: currentUser.user_id,
+          user_id: currentUserProfile.user_id,
           height,
           weight,
           targetWeight,
@@ -163,7 +146,6 @@ const ProfileModify = () => {
 
       if (res.ok) {
         const data = await res.json();
-        setCurrentUser(data);
         window.alert("목표 수정이 완료되었습니다.");
         router.push("/personal?activeTab=profileModify");
       } else {
@@ -175,7 +157,7 @@ const ProfileModify = () => {
     }
   };
 
-  if (!currentUser) return <div>Loading...</div>;
+  if (!currentUserProfile) return <div>Loading...</div>;
 
   return (
     <ProfileModifyBlock>

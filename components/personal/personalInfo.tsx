@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import classnames from "classnames";
 import styles from "../../styles/components.module.css";
 import styled from "styled-components";
 import ProfileImageModal from "../Layout/ProfileImageModal";
@@ -63,8 +62,7 @@ const PersonalInfoBlock = styled.div`
   }
 `;
 
-const PersonalInfo = () => {
-  const [currentUser, setCurrentUser] = useState<any>(null);
+const PersonalInfo = ({ currentUserInfo }: { currentUserInfo: any }) => {
   const [nickname, setNickname] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -77,32 +75,12 @@ const PersonalInfo = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        const res = await fetch("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setCurrentUser(data.user);
-          setNickname(data.user.nickname);
-          setProfilePreview(data.user.profile_image);
-          setProfileImage(data.user.profile_image);
-        } else {
-          localStorage.removeItem("token");
-          router.push("/auth/login");
-        }
-      } else {
-        router.push("/auth/login");
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
+    if (currentUserInfo) {
+      setNickname(currentUserInfo.nickname);
+      setProfilePreview(currentUserInfo.profile_image);
+      setProfileImage(currentUserInfo.profile_image);
+    }
+  }, [currentUserInfo]);
 
   const handleProfileImageClick = () => {
     setShowButtons((prevState) => !prevState);
@@ -128,7 +106,7 @@ const PersonalInfo = () => {
     setError("");
 
     const formData = new FormData();
-    formData.append("email", currentUser.email);
+    formData.append("email", currentUserInfo.email);
     formData.append("nickname", nickname);
     if (typeof profileImage === "string") {
       formData.append("profile_image_url", profileImage);
@@ -146,7 +124,6 @@ const PersonalInfo = () => {
 
       if (res.ok) {
         const data = await res.json();
-        setCurrentUser(data.user);
         setError("");
         window.alert("개인정보 수정이 완료되었습니다.");
         router.reload(); // 페이지 새로고침으로 변경사항 반영
@@ -179,7 +156,7 @@ const PersonalInfo = () => {
     };
   }, [showButtons]);
 
-  if (!currentUser) return <div>Loading...</div>;
+  if (!currentUserInfo) return <div>Loading...</div>;
 
   return (
     <PersonalInfoBlock className={styles.container}>
@@ -242,7 +219,7 @@ const PersonalInfo = () => {
                   className={styles.input__big}
                   type="email"
                   id="email"
-                  value={currentUser.email}
+                  value={currentUserInfo.email}
                   disabled
                 />
               </td>

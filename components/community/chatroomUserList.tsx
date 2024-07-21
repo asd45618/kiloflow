@@ -34,7 +34,7 @@ const UserListContainer = styled.div<{ showUserList: boolean }>`
   top: 0px;
   right: 0px;
   height: 100%;
-  width: 250px;
+  width: 300px;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -65,9 +65,8 @@ const UserListContainer = styled.div<{ showUserList: boolean }>`
         }
         button.kick {
           margin-left: auto;
-          background: red;
-          color: white;
-          border: none;
+
+          border: 1px solid red;
           border-radius: 5px;
           padding: 5px 10px;
           cursor: pointer;

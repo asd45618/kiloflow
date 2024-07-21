@@ -18,6 +18,13 @@ const FoodListWrapper = styled.div`
       cursor: pointer;
     }
   }
+  .register__btn {
+    text-align: right;
+    a {
+      text-decoration: none;
+      color: #000;
+    }
+  }
   ul {
     padding-left: 0;
     a {
@@ -70,10 +77,22 @@ interface FoodItem {
   fat: number;
   calorie: number;
   img: string;
+  user_id: number;
 }
 
 const FoodList: React.FC = () => {
   const [foodList, setFoodList] = useState<FoodItem[]>([]);
+  const [searchList, setSearchList] = useState<FoodItem[]>([]);
+  const [keyWord, setKeyWord] = useState('');
+
+  const changeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setKeyWord(e.target.value);
+  };
+
+  const search = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchList(foodList.filter((food) => food.name.includes(keyWord)));
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,49 +109,94 @@ const FoodList: React.FC = () => {
         // 에러 처리 로직 추가
       }
     };
-
     fetchData();
   }, []);
+
+  useEffect(() => {
+    !keyWord ? setSearchList([]) : '';
+  }, [keyWord]);
 
   return (
     <FoodListWrapper>
       <div className='search'>
-        <input type='text' />
-        <FontAwesomeIcon icon={faMagnifyingGlass} />
+        <form onSubmit={search}>
+          <input type='text' value={keyWord} onChange={changeKeyword} />
+          <FontAwesomeIcon icon={faMagnifyingGlass} onClick={search} />
+        </form>
+      </div>
+      <div className='register__btn'>
+        <Link href='/food/register'>음식 등록</Link>
       </div>
       <ul>
-        {foodList.map((food) => (
-          <Link
-            href={{
-              pathname: `/food/detail/${food.id}`,
-              query: {
-                data: JSON.stringify(food),
-              },
-            }}
-            as={`/food/detail/${food.id}`}
-          >
-            <li key={food.id}>
-              <div className='list__img'>
-                <img src={food.img} alt={food.name} />
-              </div>
-              <div className='list__info'>
-                {typeof food.id === 'number' ? (
-                  <p className='user__regi'>유저등록</p>
-                ) : (
-                  ''
-                )}
-                <p>{food.name}</p>
-                <p>
-                  단: {food.protein}g 탄: {food.carbohydrate}g 지: {food.fat}g
-                </p>
-                <p>열량: {food.calorie}kcal</p>
-              </div>
-              <div className='detail__btn'>
-                <FontAwesomeIcon icon={faSquarePlus} />
-              </div>
-            </li>
-          </Link>
-        ))}
+        {!searchList.length
+          ? foodList.map((food) => (
+              <Link
+                href={{
+                  pathname: `/food/detail/${food.id}`,
+                  query: {
+                    data: JSON.stringify(food),
+                  },
+                }}
+                as={`/food/detail/${food.id}`}
+                key={food.id}
+              >
+                <li key={food.id}>
+                  <div className='list__img'>
+                    <img src={food.img} alt={food.name} />
+                  </div>
+                  <div className='list__info'>
+                    {typeof food.id === 'number' ? (
+                      <p className='user__regi'>유저등록</p>
+                    ) : (
+                      ''
+                    )}
+                    <p>{food.name}</p>
+                    <p>
+                      단: {food.protein}g 탄: {food.carbohydrate}g 지:{' '}
+                      {food.fat}g
+                    </p>
+                    <p>열량: {food.calorie}kcal</p>
+                  </div>
+                  <div className='detail__btn'>
+                    <FontAwesomeIcon icon={faSquarePlus} />
+                  </div>
+                </li>
+              </Link>
+            ))
+          : searchList.map((food) => (
+              <Link
+                href={{
+                  pathname: `/food/detail/${food.id}`,
+                  query: {
+                    data: JSON.stringify(food),
+                  },
+                }}
+                as={`/food/detail/${food.id}`}
+                key={food.id}
+              >
+                <li key={food.id}>
+                  <div className='list__img'>
+                    <img src={food.img} alt={food.name} />
+                  </div>
+                  <div className='list__info'>
+                    {typeof food.id === 'number' ? (
+                      <p className='user__regi'>유저등록</p>
+                    ) : (
+                      ''
+                    )}
+                    <p>{food.name}</p>
+                    <p>
+                      단: {food.protein}g 탄: {food.carbohydrate}g 지:{' '}
+                      {food.fat}g
+                    </p>
+                    <p>열량: {food.calorie}kcal</p>
+                  </div>
+                  <div className='detail__btn'>
+                    <FontAwesomeIcon icon={faSquarePlus} />
+                  </div>
+                </li>
+              </Link>
+            ))}
       </ul>
     </FoodListWrapper>
   );

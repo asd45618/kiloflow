@@ -31,8 +31,26 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
         try {
           console.log(`User ${userId} joined room ${roomId}`);
           socket.join(roomId);
+
+          const member = await prisma.chatroom_members.upsert({
+            where: {
+              chatroom_id_user_id: { chatroom_id: roomId, user_id: userId },
+            },
+            update: {},
+            create: {
+              chatroom_id: roomId,
+              user_id: userId,
+              joined_at: new Date(),
+            },
+          });
+
           const messages = await prisma.chatMessages.findMany({
-            where: { chatroom_id: Number(roomId) },
+            where: {
+              chatroom_id: Number(roomId),
+              created_at: {
+                gte: member.joined_at,
+              },
+            },
             orderBy: { created_at: "asc" },
           });
           socket.emit("load_messages", messages);

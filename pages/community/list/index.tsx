@@ -1,17 +1,12 @@
-// pages/community/list/index.tsx
 import { Suspense, useState, useEffect } from "react";
-import Image from "next/image";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 import Dropdown from "react-bootstrap/Dropdown";
-import CommunityModal from "../../../components/community/communityModal";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import communityThumb from "../../../public/communityThumb.png";
 import { HiPlusSm } from "react-icons/hi";
 import { IoChatbubble } from "react-icons/io5";
-import { TbH1 } from "react-icons/tb";
 import dynamic from "next/dynamic";
 
 const ChatroomList = dynamic(
@@ -20,7 +15,6 @@ const ChatroomList = dynamic(
 );
 
 const CommunityListWrapper = styled.div`
-  padding: 0 20px;
   position: relative;
   .top {
     display: flex;
@@ -55,50 +49,6 @@ const CommunityListWrapper = styled.div`
       font-size: 24px;
     }
   }
-  .list__info {
-    display: flex;
-    flex-wrap: wrap;
-    border-bottom: 1px solid #aeaeae;
-    padding: 20px 0;
-    .info__img {
-      flex: 0 0 15%;
-      margin-right: 5%;
-      position: relative;
-      img {
-        border-radius: 50%;
-        border: 1px solid #ddd;
-        width: 100%;
-        height: auto;
-        aspect-ratio: 1/1;
-        object-fit: cover;
-      }
-    }
-    .info__text__wrapper {
-      flex: 0 0 80%;
-      .text__top {
-        display: flex;
-        justify-content: space-between;
-      }
-      .text__bottom {
-        p {
-          font-size: 12px;
-          color: #979797;
-        }
-      }
-    }
-  }
-  .create-chatroom {
-    text-align: center;
-    margin: 20px 0;
-    button {
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-  }
 `;
 
 interface Chatroom {
@@ -114,15 +64,7 @@ const CommunityList = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [chatrooms, setChatrooms] = useState<Chatroom[]>([]);
   const [search, setSearch] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [selectedChatroom, setSelectedChatroom] = useState<Chatroom | null>(
-    null
-  );
   const [searchType, setSearchType] = useState("제목");
-  const [joinedChatrooms, setJoinedChatrooms] = useState<number[]>([]);
-  const [chatroomMemberCounts, setChatroomMemberCounts] = useState<{
-    [key: number]: number;
-  }>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -154,58 +96,12 @@ const CommunityList = () => {
     fetchChatrooms();
   }, [search, searchType]);
 
-  useEffect(() => {
-    if (currentUser) {
-      fetchJoinedChatrooms();
-    }
-  }, [currentUser]);
-
-  useEffect(() => {
-    if (chatrooms.length > 0) {
-      fetchChatroomMemberCounts();
-    }
-  }, [chatrooms]);
-
   const fetchChatrooms = async () => {
     const res = await fetch(
       `/api/community?search=${search}&type=${searchType}`
     );
     const data: Chatroom[] = await res.json();
     setChatrooms(data);
-  };
-
-  const fetchJoinedChatrooms = async () => {
-    const res = await fetch(
-      `/api/community/joined?currentUser=${currentUser.user_id}`
-    );
-    const data: { chatroom_id: number }[] = await res.json();
-    setJoinedChatrooms(data.map((item) => item.chatroom_id));
-  };
-
-  const fetchChatroomMemberCounts = async () => {
-    const counts = await Promise.all(
-      chatrooms.map(async (chatroom) => {
-        const res = await fetch(
-          `/api/community/members-count?chatroomId=${chatroom.id}`
-        );
-        const data = await res.json();
-        return { chatroomId: chatroom.id, count: data.count };
-      })
-    );
-    const countsMap = counts.reduce(
-      (acc, { chatroomId, count }) => ({ ...acc, [chatroomId]: count }),
-      {}
-    );
-    setChatroomMemberCounts(countsMap);
-  };
-
-  const handleChatroomClick = (chatroom: Chatroom) => {
-    if (joinedChatrooms.includes(chatroom.id)) {
-      router.push(`/community/chat/${chatroom.id}`);
-    } else {
-      setSelectedChatroom(chatroom);
-      setShowModal(true);
-    }
   };
 
   return (
@@ -243,18 +139,11 @@ const CommunityList = () => {
       <Suspense fallback={<h1>Loading chatrooms...</h1>}>
         <ChatroomList
           chatrooms={chatrooms}
-          joinedChatrooms={joinedChatrooms}
-          chatroomMemberCounts={chatroomMemberCounts}
-          handleChatroomClick={handleChatroomClick}
+          currentUser={currentUser}
+          search={search}
+          searchType={searchType}
         />
       </Suspense>
-      {showModal && (
-        <CommunityModal
-          chatroom={selectedChatroom}
-          currentUser={currentUser}
-          onHide={() => setShowModal(false)}
-        />
-      )}
     </CommunityListWrapper>
   );
 };

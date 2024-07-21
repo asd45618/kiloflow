@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { TbSpeakerphone } from "react-icons/tb";
 
@@ -11,11 +11,21 @@ const NoticeContainer = styled.div`
   .subject {
     display: flex;
     align-items: center;
+    h4 {
+      padding: 5px 10px;
+    }
+  }
+  .content {
+    padding: 0 10px;
   }
   .actions {
-    margin-top: 10px;
-    button {
-      margin-right: 10px;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 40px;
+    p {
+      line-height: 1;
+      margin-top: 10px;
     }
   }
 `;
@@ -25,9 +35,18 @@ interface NoticeProps {
   title: string;
   content: string;
   createdAt: string;
+  noticeRef: React.RefObject<HTMLDivElement>; // Ref 속성 추가
+  onHeightChange: (height: number) => void; // 높이 변화 핸들러 추가
 }
 
-const Notice: React.FC<NoticeProps> = ({ id, title, content, createdAt }) => {
+const Notice: React.FC<NoticeProps> = ({
+  id,
+  title,
+  content,
+  createdAt,
+  noticeRef,
+  onHeightChange, // 높이 변화 핸들러 추가
+}) => {
   const storageKey = `notice-${id}`;
   const savedState = localStorage.getItem(storageKey);
   const initialState = savedState
@@ -74,17 +93,27 @@ const Notice: React.FC<NoticeProps> = ({ id, title, content, createdAt }) => {
     }
   }, [isOpen, isVisible, storageKey, createdAt, lastCreatedAt]);
 
+  useEffect(() => {
+    if (noticeRef.current) {
+      if (isVisible) {
+        onHeightChange(noticeRef.current.clientHeight);
+      } else {
+        onHeightChange(0);
+      }
+    }
+  }, [isOpen, isVisible, noticeRef, onHeightChange]);
+
   if (!isVisible) {
     return null;
   }
 
   return (
-    <NoticeContainer onClick={() => setIsOpen(!isOpen)}>
+    <NoticeContainer ref={noticeRef} onClick={() => setIsOpen(!isOpen)}>
       <div className="subject">
         <TbSpeakerphone />
         <h4>{title}</h4>
       </div>
-      {isOpen && <p>{content}</p>}
+      {isOpen && <p className="content">{content}</p>}
       {isOpen && (
         <div className="actions">
           <button
@@ -95,6 +124,7 @@ const Notice: React.FC<NoticeProps> = ({ id, title, content, createdAt }) => {
           >
             공지 닫기
           </button>
+          <p>|</p>
           <button
             onClick={(e) => {
               e.stopPropagation();

@@ -21,7 +21,7 @@ export default async function handler(
       });
 
       if (!notice) {
-        return res.status(404).json({ error: "No notice found" });
+        return res.status(404).json(null);
       }
 
       res.status(200).json(notice);

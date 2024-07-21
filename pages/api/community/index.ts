@@ -1,4 +1,3 @@
-// pages/api/community/index.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 import upload from "../../../lib/multer";
@@ -36,14 +35,32 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     // 채팅방 목록 가져오기
-    const { search, type } = req.query;
-    const searchType = type === "태그" ? "tags" : "name";
+    const { search, type, ids } = req.query;
 
-    const chatrooms = await prisma.chatrooms.findMany({
-      where: {
-        [searchType]: { contains: search as string },
-      },
-    });
+    let chatrooms;
+    if (ids) {
+      // 특정 ID 목록에 해당하는 채팅방 가져오기
+      const chatroomIds = (ids as string).split(",").map(Number);
+      chatrooms = await prisma.chatrooms.findMany({
+        where: {
+          id: {
+            in: chatroomIds,
+          },
+        },
+      });
+    } else if (search && type) {
+      // 검색 조건에 따른 채팅방 목록 가져오기
+      const searchType = type === "태그" ? "tags" : "name";
+      chatrooms = await prisma.chatrooms.findMany({
+        where: {
+          [searchType]: { contains: search as string },
+        },
+      });
+    } else {
+      // 모든 채팅방 가져오기
+      chatrooms = await prisma.chatrooms.findMany();
+    }
+
     // 해시태그 앞에 '#' 붙이기
     const updatedChatrooms = chatrooms.map((chatroom) => ({
       ...chatroom,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import communityThumb from "../../../../public/communityThumb.png";
@@ -6,12 +6,13 @@ import styles from "../../../../styles/components.module.css";
 import styled from "styled-components";
 import socket from "../../../../lib/socket"; // 소켓 초기화 파일 import
 import { IoIosArrowBack } from "react-icons/io";
+
 import ChatRoomUserList from "../../../../components/community/chatroomUserList";
 import Notice from "../../../../components/community/notice";
 
 import minion from "../../../../public/minion1.png";
 
-const ChatContainer = styled.div`
+const ChatContainer = styled.div<{ noticeHeight: number }>`
   overflow: hidden;
   position: relative;
   display: flex;
@@ -48,10 +49,10 @@ const ChatContainer = styled.div`
     }
   }
   .messages {
-    // flex: 1;
-    height: 56vh;
+    height: calc(52vh - ${({ noticeHeight }) => noticeHeight}px);
     overflow-y: scroll;
     padding: 10px;
+
     display: flex;
     flex-direction: column;
   }
@@ -157,6 +158,9 @@ const ChatRoom = () => {
   const [participatingUsers, setParticipatingUsers] = useState<User[]>([]);
   const [showUserList, setShowUserList] = useState(false);
   const [latestNotice, setLatestNotice] = useState<Notice | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const noticeRef = useRef<HTMLDivElement | null>(null); // 공지 Ref 추가
+  const [noticeHeight, setNoticeHeight] = useState(0);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -199,16 +203,6 @@ const ChatRoom = () => {
         setMessages((prevMessages) => [...prevMessages, newMessage]);
       });
 
-      socket.on("user_left", (user: User) => {
-        const systemMessage = {
-          id: Date.now(),
-          user_id: null, // 시스템 메시지의 user_id를 null으로 설정
-          message: `${user.nickname}님이 나갔습니다.`,
-        };
-        setMessages((prevMessages) => [...prevMessages, systemMessage]);
-        fetchParticipatingUsers();
-      });
-
       socket.on("system_message", (systemMessage: Message) => {
         setMessages((prevMessages) => [...prevMessages, systemMessage]);
       });
@@ -228,6 +222,18 @@ const ChatRoom = () => {
       };
     }
   }, [roomId, currentUser]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (noticeRef.current) {
+      setNoticeHeight(noticeRef.current.clientHeight);
+    }
+  }, [latestNotice, noticeHeight]); // 높이 변화를 추적할 변수 추가
 
   const checkIfOwner = async () => {
     const res = await fetch(
@@ -259,7 +265,11 @@ const ChatRoom = () => {
   const fetchLatestNotice = async () => {
     const res = await fetch(`/api/community/latest-notice?roomId=${roomId}`);
     const data = await res.json();
-    setLatestNotice(data);
+    if (data) {
+      setLatestNotice(data);
+    } else {
+      setLatestNotice(null);
+    }
   };
 
   const sendMessage = () => {
@@ -293,6 +303,7 @@ const ChatRoom = () => {
       });
 
       if (res.ok) {
+        fetchParticipatingUsers();
         socket.emit("leave_room", {
           roomId,
           user: currentUser,
@@ -302,8 +313,35 @@ const ChatRoom = () => {
     }
   };
 
+  const kickUser = async (userId: number, userNickname: string) => {
+    if (confirm(`${userId}님을 강제로 퇴장시키겠습니까?`)) {
+      const res = await fetch(`/api/community/join`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatroom_id: roomId,
+          user_id: userId,
+          action: "kick", // 강퇴 액션
+        }),
+      });
+
+      if (res.ok) {
+        fetchParticipatingUsers();
+        socket.emit("kick_room", {
+          roomId,
+          user: { userId: userId, nickname: userNickname },
+        });
+        router.push("/community/list");
+      } else {
+        alert("사용자 강퇴에 실패했습니다.");
+      }
+    }
+  };
+
   return (
-    <ChatContainer>
+    <ChatContainer noticeHeight={noticeHeight}>
       <div className="top">
         <div className="back" onClick={() => router.back()}>
           <IoIosArrowBack />
@@ -335,18 +373,20 @@ const ChatRoom = () => {
           chatroomInfo={chatroomInfo}
           handleLeaveRoom={handleLeaveRoom}
           setShowUserList={setShowUserList}
+          kickUser={kickUser} // 강퇴 기능 추가
         />
       </div>
-
+      {latestNotice && (
+        <Notice
+          id={roomId}
+          title={latestNotice.title}
+          content={latestNotice.content}
+          createdAt={latestNotice.created_at}
+          noticeRef={noticeRef} // 공지 Ref 전달
+          onHeightChange={setNoticeHeight} // 높이 변화 핸들러 전달
+        />
+      )}
       <div className="messages">
-        {latestNotice && (
-          <Notice
-            id={roomId}
-            title={latestNotice.title}
-            content={latestNotice.content}
-            createdAt={latestNotice.created_at}
-          />
-        )}
         {messages.map((msg) => {
           const isCurrentUser = currentUser
             ? msg.user_id === currentUser.user_id
@@ -364,11 +404,12 @@ const ChatRoom = () => {
             >
               {!isCurrentUser && messageUser && !isSystemMessage && (
                 <Image
-                  src={
-                    messageUser.profile_image.startsWith("/uploads/")
-                      ? messageUser.profile_image
-                      : minion
-                  }
+                  src={messageUser.profile_image}
+                  // src={
+                  //   messageUser.profile_image.startsWith("/uploads/")
+                  //     ? messageUser.profile_image
+                  //     : minion
+                  // }
                   alt="프로필"
                   className="profile__image"
                   width={40}
@@ -386,6 +427,7 @@ const ChatRoom = () => {
             </MessageContainer>
           );
         })}
+        <div ref={messagesEndRef} />
       </div>
       <div className="input__container">
         <input

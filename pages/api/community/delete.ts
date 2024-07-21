@@ -22,6 +22,9 @@ export default async function handler(
         prisma.chatrooms.delete({
           where: { id: Number(roomId) },
         }),
+        prisma.notices.deleteMany({
+          where: { chatroom_id: Number(roomId) },
+        }),
       ]);
       res.status(204).end();
     } catch (error) {

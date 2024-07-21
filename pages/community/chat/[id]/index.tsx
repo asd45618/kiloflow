@@ -1,17 +1,13 @@
-import { useEffect, useState, useRef, KeyboardEvent } from "react";
+import React, { KeyboardEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import communityThumb from "../../../../public/communityThumb.png";
-import styles from "../../../../styles/components.module.css";
-import styled from "styled-components";
-import socket from "../../../../lib/socket"; // 소켓 초기화 파일 import
 import { IoIosArrowBack } from "react-icons/io";
-
+import communityThumb from "../../../../public/communityThumb.png";
+import styled from "styled-components";
+import useChatHook from "../../../../components/community/useChatHook";
 import ChatRoomUserList from "../../../../components/community/chatroomUserList";
 import Notice from "../../../../components/community/notice";
-
-import minion from "../../../../public/minion1.png";
-import unknownUser from "../../../../public/unknownUser.jpg";
+import ChatMessage from "../../../../components/community/chatMassage";
 
 const ChatContainer = styled.div<{ noticeHeight: number }>`
   overflow: hidden;
@@ -26,40 +22,62 @@ const ChatContainer = styled.div<{ noticeHeight: number }>`
     padding: 10px;
     background-color: #f5f5f5;
     border-bottom: 1px solid #ccc;
+
     .back {
       cursor: pointer;
       font-size: 24px;
     }
+
     .chat__info {
       display: flex;
       align-items: center;
+
       img {
         width: 50px;
         height: 50px;
         border-radius: 50%;
         margin-right: 10px;
       }
-      .chatroom__name {
+
+      .chatroom__details {
         display: flex;
         align-items: center;
+
+        h4 {
+          margin: 0;
+        }
+
+        p {
+          margin: 0;
+        }
       }
     }
+
     .menu__button {
       cursor: pointer;
       font-size: 24px;
     }
   }
+
   .messages {
     height: calc(52vh - ${({ noticeHeight }) => noticeHeight}px);
     overflow-y: scroll;
     padding: 10px;
-
     display: flex;
     flex-direction: column;
+
+    .date_message {
+      text-align: center;
+      font-size: 14px;
+      color: gray;
+      margin: 10px 0;
+    }
   }
+
   .input__container {
     display: flex;
     padding: 10px 10px 0;
+
     input {
       flex: 1;
       padding: 10px;
@@ -67,6 +85,7 @@ const ChatContainer = styled.div<{ noticeHeight: number }>`
       border-radius: 5px;
       margin-right: 10px;
     }
+
     button {
       padding: 10px 20px;
       border: none;
@@ -74,6 +93,7 @@ const ChatContainer = styled.div<{ noticeHeight: number }>`
       background: #ccc;
       color: #fff;
       border-radius: 10px;
+
       &:hover {
         background: gray;
       }
@@ -81,284 +101,27 @@ const ChatContainer = styled.div<{ noticeHeight: number }>`
   }
 `;
 
-const MessageContainer = styled.div<{
-  isCurrentUser: boolean;
-  isSystemMessage?: boolean;
-}>`
-  display: flex;
-  flex-direction: ${({ isCurrentUser }) =>
-    isCurrentUser ? "row-reverse" : "row"};
-  align-items: flex-end;
-  margin-bottom: 10px;
-  justify-content: ${({ isSystemMessage }) =>
-    isSystemMessage ? "center" : "flex-start"};
-
-  .message__content {
-    max-width: 60%;
-    background-color: ${({ isCurrentUser, isSystemMessage }) =>
-      isSystemMessage ? "transparent" : isCurrentUser ? "#dcf8c6" : "#fff"};
-    border-radius: 10px;
-    padding: 10px;
-    margin-left: ${({ isCurrentUser }) => (isCurrentUser ? "0" : "5px")};
-    margin-right: ${({ isCurrentUser }) => (isCurrentUser ? "5px" : "0")};
-    word-break: break-word;
-    text-align: ${({ isSystemMessage }) =>
-      isSystemMessage ? "center" : "left"};
-    font-weight: ${({ isSystemMessage }) =>
-      isSystemMessage ? "bold" : "normal"};
-    position: relative;
-  }
-  .profile__image {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-
-    margin-right: 10px;
-  }
-  .nickname {
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-  .message__time {
-    text-align: center;
-    min-width: 70px;
-
-    font-size: 12px;
-    color: gray;
-    position: absolute;
-    bottom: 0;
-    right: ${({ isCurrentUser }) => (isCurrentUser ? "100%" : "auto")};
-    left: ${({ isCurrentUser }) => (isCurrentUser ? "auto" : "100%")};
-  }
-`;
-
-interface Message {
-  id: number;
-  user_id: number | null;
-  message: string;
-  created_at: string; // 추가된 속성
-}
-
-interface User {
-  user_id: number;
-  email: string;
-  nickname: string;
-  profile_image: string;
-}
-
-interface Chatroom {
-  id: number;
-  name: string;
-  image_url: string | null;
-  max_members: number;
-  owner_id: number;
-}
-
-interface Notice {
-  title: string;
-  content: string;
-  created_at: string;
-}
-
 const ChatRoom = () => {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const { id: roomIdString } = router.query;
-  const roomId = parseInt(roomIdString as string, 10);
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isOwner, setIsOwner] = useState(false);
-  const [chatroomInfo, setChatroomInfo] = useState<Chatroom | null>(null);
-  const [participatingUsers, setParticipatingUsers] = useState<User[]>([]);
-  const [showUserList, setShowUserList] = useState(false);
-  const [latestNotice, setLatestNotice] = useState<Notice | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const noticeRef = useRef<HTMLDivElement | null>(null); // 공지 Ref 추가
-  const [noticeHeight, setNoticeHeight] = useState(0);
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        const res = await fetch("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setCurrentUser(data.user);
-        } else {
-          localStorage.removeItem("token");
-          router.push("/auth/login");
-        }
-      } else {
-        router.push("/auth/login");
-      }
-    };
-
-    fetchCurrentUser();
-  }, [router]);
-
-  useEffect(() => {
-    if (roomId && currentUser) {
-      console.log("Connecting to socket...");
-      socket.connect(); // 필요한 경우 소켓을 연결합니다.
-      socket.emit("join_room", { roomId, userId: currentUser.user_id });
-
-      socket.on("load_messages", (loadedMessages: Message[]) => {
-        console.log("Loaded messages:", loadedMessages);
-        setMessages(loadedMessages);
-      });
-
-      socket.on("new_message", (newMessage: Message) => {
-        console.log("Received new message:", newMessage);
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
-      });
-
-      socket.on("system_message", (systemMessage: Message) => {
-        setMessages((prevMessages) => [...prevMessages, systemMessage]);
-      });
-
-      checkIfOwner();
-      fetchChatroomInfo();
-      fetchParticipatingUsers();
-      fetchLatestNotice();
-
-      return () => {
-        socket.off("load_messages");
-        socket.off("new_message");
-        socket.off("user_left");
-
-        socket.off("system_message");
-        socket.disconnect(); // 컴포넌트 언마운트 시 소켓 연결 해제
-      };
-    }
-  }, [roomId, currentUser]);
-
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    if (noticeRef.current) {
-      setNoticeHeight(noticeRef.current.clientHeight);
-    }
-  }, [latestNotice, noticeHeight]); // 높이 변화를 추적할 변수 추가
-
-  const checkIfOwner = async () => {
-    const res = await fetch(
-      `/api/community/current-chatroom-info?roomId=${roomId}&action=info`
-    );
-    const data = await res.json();
-    if (currentUser && data.owner_id === currentUser.user_id) {
-      setIsOwner(true);
-    }
-    setChatroomInfo(data);
-  };
-
-  const fetchChatroomInfo = async () => {
-    const res = await fetch(
-      `/api/community/current-chatroom-info?roomId=${roomId}&action=info`
-    );
-    const data = await res.json();
-    setChatroomInfo(data);
-  };
-
-  const fetchParticipatingUsers = async () => {
-    const res = await fetch(
-      `/api/community/current-chatroom-info?roomId=${roomId}&action=users`
-    );
-    const data = await res.json();
-    setParticipatingUsers(data);
-  };
-
-  const fetchLatestNotice = async () => {
-    const res = await fetch(`/api/community/latest-notice?roomId=${roomId}`);
-    const data = await res.json();
-    if (data) {
-      setLatestNotice(data);
-    } else {
-      setLatestNotice(null);
-    }
-  };
-
-  const sendMessage = () => {
-    if (roomId && currentUser) {
-      console.log("Sending message:", message);
-      socket.emit("send_message", {
-        roomId,
-        userId: currentUser.user_id,
-        message,
-      });
-      setMessage("");
-    }
-  };
-
-  const handleLeaveRoom = async () => {
-    if (!currentUser) {
-      alert("유효하지 않은 사용자입니다.");
-      return;
-    }
-
-    if (confirm("채팅방을 나가시겠습니까?")) {
-      const res = await fetch(`/api/community/join`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chatroom_id: roomId,
-          user_id: currentUser.user_id,
-        }),
-      });
-
-      if (res.ok) {
-        fetchParticipatingUsers();
-        socket.emit("leave_room", {
-          roomId,
-          user: currentUser,
-        });
-        router.push("/community/list");
-      }
-    }
-  };
-
-  const kickUser = async (userId: number, userNickname: string) => {
-    if (confirm(`${userId}님을 강제로 퇴장시키겠습니까?`)) {
-      const res = await fetch(`/api/community/join`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chatroom_id: roomId,
-          user_id: userId,
-          action: "kick", // 강퇴 액션
-        }),
-      });
-
-      if (res.ok) {
-        fetchParticipatingUsers();
-        socket.emit("kick_room", {
-          roomId,
-          user: { userId: userId, nickname: userNickname },
-        });
-        router.push("/community/list");
-      } else {
-        alert("사용자 강퇴에 실패했습니다.");
-      }
-    }
-  };
-
-  const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      sendMessage();
-    }
-  };
+  const {
+    currentUser,
+    message,
+    setMessage,
+    messages,
+    isOwner,
+    chatroomInfo,
+    participatingUsers,
+    showUserList,
+    setShowUserList,
+    latestNotice,
+    messagesEndRef,
+    noticeRef,
+    noticeHeight,
+    setNoticeHeight,
+    sendMessage,
+    handleLeaveRoom,
+    kickUser,
+  } = useChatHook();
 
   const formatTime = (time: string) => {
     const date = new Date(time);
@@ -368,6 +131,51 @@ const ChatRoom = () => {
     const formattedHours = hours % 12 || 12;
     const formattedMinutes = minutes.toString().padStart(2, "0");
     return `${period} ${formattedHours}:${formattedMinutes}`;
+  };
+
+  const formatDate = (time: string) => {
+    const date = new Date(time);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}년 ${month}월 ${day}일`;
+  };
+
+  const renderMessages = () => {
+    let lastDate = "";
+
+    return messages.map((msg) => {
+      const isCurrentUser = currentUser
+        ? msg.user_id === currentUser.user_id
+        : false;
+      const isSystemMessage = msg.user_id === null;
+      const messageUser = participatingUsers.find(
+        (user) => user.user_id === msg.user_id
+      );
+
+      const messageDate = formatDate(msg.created_at);
+      const showDateMessage = messageDate !== lastDate;
+      if (showDateMessage) lastDate = messageDate;
+
+      return (
+        <React.Fragment key={msg.id}>
+          {showDateMessage && <div className="date_message">{messageDate}</div>}
+          <ChatMessage
+            message={msg}
+            isCurrentUser={isCurrentUser}
+            isSystemMessage={isSystemMessage}
+            messageUser={messageUser}
+            formatTime={formatTime}
+          />
+        </React.Fragment>
+      );
+    });
+  };
+
+  const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      sendMessage();
+    }
   };
 
   return (
@@ -383,7 +191,7 @@ const ChatRoom = () => {
             width={50}
             height={50}
           />
-          <div className="chatroom__name">
+          <div className="chatroom__details">
             <h4>{chatroomInfo?.name}</h4>
             <p>
               ({participatingUsers.length}/{chatroomInfo?.max_members})
@@ -406,9 +214,9 @@ const ChatRoom = () => {
           kickUser={kickUser} // 강퇴 기능 추가
         />
       </div>
-      {latestNotice && (
+      {chatroomInfo && latestNotice && (
         <Notice
-          id={roomId}
+          id={chatroomInfo.id}
           title={latestNotice.title}
           content={latestNotice.content}
           createdAt={latestNotice.created_at}
@@ -417,48 +225,7 @@ const ChatRoom = () => {
         />
       )}
       <div className="messages">
-        {messages.map((msg) => {
-          const isCurrentUser = currentUser
-            ? msg.user_id === currentUser.user_id
-            : false;
-          const isSystemMessage = msg.user_id === null;
-          const messageUser = participatingUsers.find(
-            (user) => user.user_id === msg.user_id
-          );
-
-          return (
-            <MessageContainer
-              key={msg.id}
-              isCurrentUser={isCurrentUser}
-              isSystemMessage={isSystemMessage}
-            >
-              {!isCurrentUser && !isSystemMessage && (
-                <Image
-                  src={messageUser ? messageUser.profile_image : unknownUser}
-                  alt="프로필"
-                  className="profile__image"
-                  width={40}
-                  height={40}
-                />
-              )}
-              <div className="message__content">
-                {!isCurrentUser && !isSystemMessage && (
-                  <div className="nickname">
-                    {messageUser ? messageUser.nickname : "알 수 없는 사용자"}
-                  </div>
-                )}
-                <div className={isSystemMessage ? styles.systemMessage : ""}>
-                  {msg.message}
-                </div>
-                {!isSystemMessage && (
-                  <div className="message__time">
-                    {formatTime(msg.created_at)}
-                  </div>
-                )}
-              </div>
-            </MessageContainer>
-          );
-        })}
+        {renderMessages()}
         <div ref={messagesEndRef} />
       </div>
       <div className="input__container">

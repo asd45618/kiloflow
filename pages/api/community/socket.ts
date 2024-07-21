@@ -16,6 +16,13 @@ interface NextApiResponseWithSocket extends NextApiResponse {
   socket: SocketWithIO;
 }
 
+const formatDate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}년 ${month}월 ${day}일`;
+};
+
 const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
   if (!res.socket.server.io) {
     console.log("Initializing socket.io server...");
@@ -34,7 +41,6 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
 
           const member = await prisma.chatroom_members.findUnique({
             where: {
-              //복합키->해당 사용자가 해당 채팅방에 입장한 기록을 조회하기 위해 사용
               chatroom_id_user_id: { chatroom_id: roomId, user_id: userId },
             },
           });
@@ -47,7 +53,6 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
             where: {
               chatroom_id: Number(roomId),
               created_at: {
-                //gte: 지정된 시간 이후(또는 같은 시간)의 메시지만 필터링
                 gte: member.joined_at,
               },
             },
@@ -141,6 +146,16 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
             return;
           }
 
+          const currentDate = formatDate(new Date());
+
+          // const dateMessage = await prisma.chatMessages.create({
+          //   data: {
+          //     chatroom_id: Number(roomId),
+          //     user_id: null,
+          //     message: currentDate,
+          //   },
+          // });
+
           const systemMessage = await prisma.chatMessages.create({
             data: {
               chatroom_id: Number(roomId),
@@ -149,6 +164,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
             },
           });
 
+          // io.to(roomId).emit("new_message", dateMessage);
           io.to(roomId).emit("new_message", systemMessage);
         } catch (error) {
           console.error("Error in send_entry_message:", error);

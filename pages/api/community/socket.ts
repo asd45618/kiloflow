@@ -32,22 +32,22 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
           console.log(`User ${userId} joined room ${roomId}`);
           socket.join(roomId);
 
-          const member = await prisma.chatroom_members.upsert({
+          const member = await prisma.chatroom_members.findUnique({
             where: {
+              //복합키->해당 사용자가 해당 채팅방에 입장한 기록을 조회하기 위해 사용
               chatroom_id_user_id: { chatroom_id: roomId, user_id: userId },
             },
-            update: {},
-            create: {
-              chatroom_id: roomId,
-              user_id: userId,
-              joined_at: new Date(),
-            },
           });
+
+          if (!member) {
+            throw new Error("User is not a member of this chatroom.");
+          }
 
           const messages = await prisma.chatMessages.findMany({
             where: {
               chatroom_id: Number(roomId),
               created_at: {
+                //gte: 지정된 시간 이후(또는 같은 시간)의 메시지만 필터링
                 gte: member.joined_at,
               },
             },

@@ -24,37 +24,55 @@ interface Props {
 
 const ChatroomListWrapper = styled.div`
   padding: 0 20px;
-  .list__info {
-    display: flex;
-    flex-wrap: wrap;
-    border-bottom: 1px solid #aeaeae;
-    padding: 20px 0;
-    .info__img {
-      flex: 0 0 15%;
-      margin-right: 5%;
-      position: relative;
-      img {
-        border-radius: 50%;
-        border: 1px solid #ddd;
-        width: 100%;
-        height: auto;
-        aspect-ratio: 1/1;
-        object-fit: cover;
+  height: 100%;
+  position: relative;
+  .chatroom__list {
+    .list__info {
+      display: flex;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #aeaeae;
+      padding: 20px 0;
+      .info__img {
+        flex: 0 0 15%;
+        margin-right: 5%;
+        position: relative;
+        img {
+          border-radius: 50%;
+          border: 1px solid #ddd;
+          width: 100%;
+          height: auto;
+          aspect-ratio: 1/1;
+          object-fit: cover;
+        }
       }
-    }
-    .info__text__wrapper {
-      flex: 0 0 80%;
-      .text__top {
-        display: flex;
-        justify-content: space-between;
-      }
-      .text__bottom {
-        p {
-          font-size: 12px;
-          color: #979797;
+      .info__text__wrapper {
+        flex: 0 0 80%;
+        .text__top {
+          display: flex;
+          justify-content: space-between;
+        }
+        .text__bottom {
+          p {
+            font-size: 12px;
+            color: #979797;
+          }
         }
       }
     }
+  }
+  .community__modal {
+    position: sticky;
+    bottom: 15%;
+    // top: 30%;
+    // left: 50%;
+    // transform: translate(-50%, -50%);
+    z-index: 1000;
+
+    margin: 0 auto;
+    width: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 `;
 
@@ -136,41 +154,46 @@ const ChatroomList: React.FC<Props> = ({
 
   return (
     <ChatroomListWrapper>
-      {filteredChatrooms.map((chatroom) => (
-        <div
-          className="list__info"
-          key={chatroom.id}
-          onClick={() => handleChatroomClick(chatroom)}
-        >
-          <div className="info__img">
-            <Image
-              src={chatroom.image_url || communityThumb}
-              alt="thumb"
-              width={100}
-              height={100}
-            />
-          </div>
-          <div className="info__text__wrapper">
-            <div className="text__top">
-              <div className="top__title">{chatroom.name}</div>
-              <div className="top__num">
-                {chatroomMemberCounts[chatroom.id] || 0}/{chatroom.max_members}
-              </div>
+      <div className="chatroom__list">
+        {filteredChatrooms.map((chatroom) => (
+          <div
+            className="list__info"
+            key={chatroom.id}
+            onClick={() => handleChatroomClick(chatroom)}
+          >
+            <div className="info__img">
+              <Image
+                src={chatroom.image_url || communityThumb}
+                alt="thumb"
+                width={100}
+                height={100}
+              />
             </div>
-            {chatroom.tags && chatroom.tags.trim() !== "" && (
-              <div className="text__bottom">
-                <p>{chatroom.tags}</p>
+            <div className="info__text__wrapper">
+              <div className="text__top">
+                <div className="top__title">{chatroom.name}</div>
+                <div className="top__num">
+                  {chatroomMemberCounts[chatroom.id] || 0}/
+                  {chatroom.max_members}
+                </div>
               </div>
-            )}
+              {chatroom.tags && chatroom.tags.trim() !== "" && (
+                <div className="text__bottom">
+                  <p>{chatroom.tags}</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
       {showModal && selectedChatroom && (
-        <CommunityModal
-          chatroom={selectedChatroom}
-          currentUser={currentUser}
-          onHide={() => setShowModal(false)}
-        />
+        <div className="community__modal">
+          <CommunityModal
+            chatroom={selectedChatroom}
+            currentUser={currentUser}
+            onHide={() => setShowModal(false)}
+          />
+        </div>
       )}
     </ChatroomListWrapper>
   );

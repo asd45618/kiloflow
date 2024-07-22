@@ -93,18 +93,30 @@ model chatroom_members {
    @@unique([chatroom_id, user_id])
 }
 
-model chatMessages {
-  id           Int      @id @default(autoincrement())
-  chatroom_id  Int
-  user_id      Int?     // Int to Int?
-  message      String
-  created_at   DateTime @default(now())
+model chatImageMessage {
+  id          Int            @id @default(autoincrement())
+  path        String
+  createdAt   DateTime       @default(now())
+  chatMessages chatMessages[]
 
-  chatroom     chatrooms @relation(fields: [chatroom_id], references: [id], onDelete: Cascade)
-  user         users?    @relation(fields: [user_id], references: [user_id], onDelete: Cascade) // users?로 변경
+  @@index([id])
+}
+
+model chatMessages {
+  id          Int            @id @default(autoincrement())
+  chatroom_id Int
+  user_id     Int?
+  message     String?
+  image_id    Int?
+  created_at  DateTime       @default(now())
+
+  chatroom    chatrooms      @relation(fields: [chatroom_id], references: [id], onDelete: Cascade)
+  user        users?         @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  image       chatImageMessage? @relation(fields: [image_id], references: [id])
 
   @@index([chatroom_id])
   @@index([user_id])
+  @@index([image_id])
 }
 
 model notices {

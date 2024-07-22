@@ -1,7 +1,8 @@
-import React, { KeyboardEvent } from "react";
+import React, { useState, KeyboardEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { IoIosArrowBack } from "react-icons/io";
+import { AiOutlinePlus } from "react-icons/ai";
 import communityThumb from "../../../../public/communityThumb.png";
 import styled from "styled-components";
 import useChatHook from "../../../../components/community/useChatHook";
@@ -86,6 +87,27 @@ const ChatContainer = styled.div<{ noticeHeight: number }>`
       margin-right: 10px;
     }
 
+    .file-input {
+      display: none;
+    }
+
+    .upload-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #ccc;
+      color: #fff;
+      cursor: pointer;
+      margin-right: 10px;
+
+      &:hover {
+        background: gray;
+      }
+    }
+
     button {
       padding: 10px 20px;
       border: none;
@@ -121,7 +143,11 @@ const ChatRoom = () => {
     sendMessage,
     handleLeaveRoom,
     kickUser,
+    roomId,
+    socket,
   } = useChatHook();
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const formatTime = (time: string) => {
     const date = new Date(time);
@@ -178,6 +204,43 @@ const ChatRoom = () => {
     }
   };
 
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+
+      const formData = new FormData();
+      formData.append("file", event.target.files[0]);
+
+      const res = await fetch("/api/community/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        console.log("File uploaded successfully:", data);
+        // 파일 URL을 메시지로 전송
+        sendMessageWithFile(data.file.id);
+        setSelectedFile(null);
+      } else {
+        console.error("File upload failed");
+      }
+    }
+  };
+
+  const sendMessageWithFile = (fileId: number) => {
+    if (roomId && currentUser) {
+      socket.emit("send_message", {
+        roomId,
+        userId: currentUser.user_id,
+        image_id: fileId,
+      });
+      setMessage("");
+    }
+  };
+
   return (
     <ChatContainer noticeHeight={noticeHeight}>
       <div className="top">
@@ -211,7 +274,7 @@ const ChatRoom = () => {
           chatroomInfo={chatroomInfo}
           handleLeaveRoom={handleLeaveRoom}
           setShowUserList={setShowUserList}
-          kickUser={kickUser} // 강퇴 기능 추가
+          kickUser={kickUser}
         />
       </div>
       {chatroomInfo && latestNotice && (
@@ -220,8 +283,8 @@ const ChatRoom = () => {
           title={latestNotice.title}
           content={latestNotice.content}
           createdAt={latestNotice.created_at}
-          noticeRef={noticeRef} // 공지 Ref 전달
-          onHeightChange={setNoticeHeight} // 높이 변화 핸들러 전달
+          noticeRef={noticeRef}
+          onHeightChange={setNoticeHeight}
         />
       )}
       <div className="messages">
@@ -235,6 +298,15 @@ const ChatRoom = () => {
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
         />
+        <input
+          type="file"
+          className="file-input"
+          id="file-input"
+          onChange={handleFileChange}
+        />
+        <label className="upload-button" htmlFor="file-input">
+          <AiOutlinePlus />
+        </label>
         <button onClick={sendMessage}>Send</button>
       </div>
     </ChatContainer>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import styled from "styled-components";
 import unknownUser from "../../public/unknownUser.jpg";
@@ -50,13 +50,21 @@ const MessageContainer = styled.div<{
     right: ${({ isCurrentUser }) => (isCurrentUser ? "100%" : "auto")};
     left: ${({ isCurrentUser }) => (isCurrentUser ? "auto" : "100%")};
   }
+  .image__content {
+    width: 100%;
+    img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+  }
 `;
 
 interface Message {
   id: number;
   user_id: number | null;
-  message: string;
+  message: string | null;
   created_at: string;
+  image_id: number | null;
 }
 
 interface User {
@@ -80,6 +88,23 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   messageUser,
   formatTime,
 }) => {
+  const [imagePath, setImagePath] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (message.image_id) {
+      fetch(`/api/community/upload?id=${message.image_id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.image) {
+            setImagePath(data.image.path);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching image:", error);
+        });
+    }
+  }, [message.image_id]);
+
   return (
     <MessageContainer
       isCurrentUser={isCurrentUser}
@@ -100,7 +125,17 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             {messageUser ? messageUser.nickname : "알 수 없는 사용자"}
           </div>
         )}
-        <div>{message.message}</div>
+        {message.message && <div>{message.message}</div>}
+        {imagePath && (
+          <div className="image__content">
+            <Image
+              src={imagePath}
+              alt="Uploaded file"
+              width={100}
+              height={100}
+            />
+          </div>
+        )}
         {!isSystemMessage && (
           <div className="message__time">{formatTime(message.created_at)}</div>
         )}

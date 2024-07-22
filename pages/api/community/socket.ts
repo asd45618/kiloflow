@@ -64,24 +64,28 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
         }
       });
 
-      socket.on("send_message", async ({ roomId, userId, message }) => {
-        try {
-          console.log(
-            `New message from user ${userId} in room ${roomId}: ${message}`
-          );
-          const newMessage = await prisma.chatMessages.create({
-            data: {
-              chatroom_id: Number(roomId),
-              user_id: Number(userId),
-              message,
-              created_at: new Date(),
-            },
-          });
-          io.to(roomId).emit("new_message", newMessage);
-        } catch (error) {
-          console.error("Error in send_message:", error);
+      socket.on(
+        "send_message",
+        async ({ roomId, userId, message, image_id }) => {
+          try {
+            console.log(
+              `New message from user ${userId} in room ${roomId}: ${message}`
+            );
+            const newMessage = await prisma.chatMessages.create({
+              data: {
+                chatroom_id: Number(roomId),
+                user_id: Number(userId),
+                message,
+                image_id,
+                created_at: new Date(),
+              },
+            });
+            io.to(roomId).emit("new_message", newMessage);
+          } catch (error) {
+            console.error("Error in send_message:", error);
+          }
         }
-      });
+      );
 
       socket.on("leave_room", async ({ roomId, user }) => {
         try {

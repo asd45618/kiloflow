@@ -2,6 +2,7 @@ import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { IoIosArrowBack } from 'react-icons/io';
 import styled from 'styled-components';
 
 const ExerciseDetailWrapper = styled.div`
@@ -9,7 +10,9 @@ const ExerciseDetailWrapper = styled.div`
   .detail_top {
     display: flex;
     justify-content: center;
+    position: relative;
     h1 {
+      width: 70%;
       font-weight: bold;
     }
     span {
@@ -21,6 +24,13 @@ const ExerciseDetailWrapper = styled.div`
       svg {
         cursor: pointer;
       }
+    }
+    .back {
+      position: absolute;
+      top: 12px;
+      left: 15px;
+      cursor: pointer;
+      font-size: 24px;
     }
   }
   p {
@@ -120,6 +130,9 @@ export default function ExerciseDetail() {
         <span onClick={addTodayExercise}>
           <FontAwesomeIcon icon={faSquarePlus} />
         </span>
+        <div className='back' onClick={() => router.back()}>
+          <IoIosArrowBack />
+        </div>
       </div>
       <p>{userName}님 기준</p>
       <div className='calculation'>

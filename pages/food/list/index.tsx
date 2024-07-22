@@ -27,42 +27,52 @@ const FoodListWrapper = styled.div`
   }
   ul {
     padding-left: 0;
-    a {
-      text-decoration: none;
-      color: black;
-      li {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        flex-wrap: wrap;
-        padding: 20px 0;
-        border-bottom: 1px solid #b8b8b8;
-        .list__img {
-          flex: 0 0 30%;
-          width: 90px;
-          height: 90px;
-          img {
-            width: inherit;
-            height: inherit;
-          }
-        }
-        .list__info {
-          flex: 0 0 60%;
-          .user__regi {
-            border: 1px solid #000;
-            border-radius: 10px;
-            padding: 1px 7px;
-            margin-right: 3px;
-            text-align: center;
-          }
-        }
-        .detail__btn {
+
+    li {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 20px 0;
+      border-bottom: 1px solid #b8b8b8;
+      .list__wrapper {
+        flex: 0 0 80%;
+        a {
           display: flex;
-          align-items: center;
-          font-size: 30px;
-          svg {
-            cursor: pointer;
+          justify-content: space-between;
+          text-decoration: none;
+          color: black;
+          .list__img {
+            flex: 0 0 30%;
+            width: 90px;
+            height: 90px;
+            margin: auto 0;
+            img {
+              width: inherit;
+              height: inherit;
+            }
           }
+          .list__info {
+            flex: 0 0 65%;
+            p {
+              margin-bottom: 0.5rem;
+            }
+            .user__regi {
+              border: 1px solid #000;
+              border-radius: 10px;
+              padding: 1px 7px;
+              margin-right: 3px;
+              text-align: center;
+            }
+          }
+        }
+      }
+      .detail__btn {
+        display: flex;
+        align-items: center;
+        font-size: 30px;
+        svg {
+          cursor: pointer;
         }
       }
     }
@@ -84,6 +94,7 @@ const FoodList: React.FC = () => {
   const [foodList, setFoodList] = useState<FoodItem[]>([]);
   const [searchList, setSearchList] = useState<FoodItem[]>([]);
   const [keyWord, setKeyWord] = useState('');
+  const [currentUserID, setCurrentUserID] = useState('');
 
   const changeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
     setKeyWord(e.target.value);
@@ -92,6 +103,30 @@ const FoodList: React.FC = () => {
   const search = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchList(foodList.filter((food) => food.name.includes(keyWord)));
+  };
+
+  const addTodayFood = async (food: FoodItem) => {
+    try {
+      const res = await fetch('/api/food/todayFood', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: currentUserID,
+          food_id: food.id,
+        }),
+      });
+
+      if (res.ok) {
+        const rec = await res.json();
+        alert(`${food.name} ${rec.message}`);
+      } else {
+        alert('추가에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('추가에 실패했습니다.');
+    }
   };
 
   useEffect(() => {
@@ -104,6 +139,31 @@ const FoodList: React.FC = () => {
         const data = await response.json();
         console.log(data);
         setFoodList(data);
+      } catch (error) {
+        console.error('API 요청 에러:', error);
+        // 에러 처리 로직 추가
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setCurrentUserID(data.user.user_id);
+          } else {
+            throw new Error('데이터를 불러오는 데 실패했습니다.');
+          }
+        }
       } catch (error) {
         console.error('API 요청 에러:', error);
         // 에러 처리 로직 추가
@@ -130,72 +190,76 @@ const FoodList: React.FC = () => {
       <ul>
         {!searchList.length
           ? foodList.map((food) => (
-              <Link
-                href={{
-                  pathname: `/food/detail/${food.id}`,
-                  query: {
-                    data: JSON.stringify(food),
-                  },
-                }}
-                as={`/food/detail/${food.id}`}
-                key={food.id}
-              >
-                <li key={food.id}>
-                  <div className='list__img'>
-                    <img src={food.img} alt={food.name} />
-                  </div>
-                  <div className='list__info'>
-                    {typeof food.id === 'number' ? (
-                      <p className='user__regi'>유저등록</p>
-                    ) : (
-                      ''
-                    )}
-                    <p>{food.name}</p>
-                    <p>
-                      단: {food.protein}g 탄: {food.carbohydrate}g 지:{' '}
-                      {food.fat}g
-                    </p>
-                    <p>열량: {food.calorie}kcal</p>
-                  </div>
-                  <div className='detail__btn'>
-                    <FontAwesomeIcon icon={faSquarePlus} />
-                  </div>
-                </li>
-              </Link>
+              <li key={food.id}>
+                <div className='list__wrapper'>
+                  <Link
+                    href={{
+                      pathname: `/food/detail/${food.id}`,
+                      query: {
+                        data: JSON.stringify(food),
+                      },
+                    }}
+                    as={`/food/detail/${food.id}`}
+                    key={food.id}
+                  >
+                    <div className='list__img'>
+                      <img src={food.img} alt={food.name} />
+                    </div>
+                    <div className='list__info'>
+                      {food.id.startsWith('user') ? (
+                        <p className='user__regi'>유저등록</p>
+                      ) : (
+                        ''
+                      )}
+                      <p>{food.name}</p>
+                      <p>
+                        단: {food.protein}g 탄: {food.carbohydrate}g 지:{' '}
+                        {food.fat}g
+                      </p>
+                      <p>열량: {food.calorie}kcal</p>
+                    </div>
+                  </Link>
+                </div>
+                <div className='detail__btn' onClick={() => addTodayFood(food)}>
+                  <FontAwesomeIcon icon={faSquarePlus} />
+                </div>
+              </li>
             ))
           : searchList.map((food) => (
-              <Link
-                href={{
-                  pathname: `/food/detail/${food.id}`,
-                  query: {
-                    data: JSON.stringify(food),
-                  },
-                }}
-                as={`/food/detail/${food.id}`}
-                key={food.id}
-              >
-                <li key={food.id}>
-                  <div className='list__img'>
-                    <img src={food.img} alt={food.name} />
-                  </div>
-                  <div className='list__info'>
-                    {typeof food.id === 'number' ? (
-                      <p className='user__regi'>유저등록</p>
-                    ) : (
-                      ''
-                    )}
-                    <p>{food.name}</p>
-                    <p>
-                      단: {food.protein}g 탄: {food.carbohydrate}g 지:{' '}
-                      {food.fat}g
-                    </p>
-                    <p>열량: {food.calorie}kcal</p>
-                  </div>
-                  <div className='detail__btn'>
-                    <FontAwesomeIcon icon={faSquarePlus} />
-                  </div>
-                </li>
-              </Link>
+              <li key={food.id}>
+                <div className='list__wrapper'>
+                  <Link
+                    href={{
+                      pathname: `/food/detail/${food.id}`,
+                      query: {
+                        data: JSON.stringify(food),
+                      },
+                    }}
+                    as={`/food/detail/${food.id}`}
+                    key={food.id}
+                  >
+                    <div className='list__img'>
+                      <img src={food.img} alt={food.name} />
+                    </div>
+                    <div className='list__info'>
+                      {food.id.startsWith('user') ? (
+                        <p className='user__regi'>유저등록</p>
+                      ) : (
+                        ''
+                      )}
+                      <p>{food.name}</p>
+                      <p>
+                        단: {food.protein}g 탄: {food.carbohydrate}g 지:{' '}
+                        {food.fat}g
+                      </p>
+                      <p>열량: {food.calorie}kcal</p>
+                    </div>
+                  </Link>
+                </div>
+                <div className='detail__btn' onClick={() => addTodayFood(food)}>
+                  <FontAwesomeIcon icon={faSquarePlus} />
+                </div>
+              </li>
             ))}
       </ul>
     </FoodListWrapper>

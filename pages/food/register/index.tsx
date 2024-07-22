@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { v4 } from 'uuid';
 
 const FoodRegisterWrapper = styled.div`
   max-width: 350px;
@@ -124,6 +125,7 @@ export default function FoodRegister() {
 
   const registerFood = async (e: React.FormEvent) => {
     e.preventDefault();
+    const food_id = v4();
     setError('');
 
     if (!menu) {
@@ -152,6 +154,7 @@ export default function FoodRegister() {
     }
 
     const formData = new FormData();
+    formData.append('food_id', food_id);
     formData.append('menu', menu);
     formData.append('img', img);
     formData.append('pro', pro.toString());

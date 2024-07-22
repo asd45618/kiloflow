@@ -9,10 +9,12 @@ import styled from 'styled-components';
 import { useRouter } from 'next/router';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import { useEffect, useState } from 'react';
+import { IoIosArrowBack } from 'react-icons/io';
 
 const FoodDetailWrapper = styled.div`
   text-align: center;
   .detail__top {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -23,12 +25,21 @@ const FoodDetailWrapper = styled.div`
       padding: 1px 7px;
       margin-right: 3px;
       font-size: 18px;
-      margin: 15px;
+      margin: 15px 15px 0;
     }
     h1 {
+      width: 80%;
       font-size: 30px;
       font-weight: bold;
+      margin-top: 13px;
       margin-bottom: 25px;
+    }
+    .back {
+      position: absolute;
+      top: 20px;
+      left: 15px;
+      cursor: pointer;
+      font-size: 24px;
     }
   }
   .detail__img {
@@ -204,6 +215,30 @@ export default function FoodDetail() {
     }
   };
 
+  const addTodayFood = async () => {
+    try {
+      const res = await fetch('/api/food/todayFood', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: currentUserId,
+          food_id: id,
+        }),
+      });
+
+      if (res.ok) {
+        const rec = await res.json();
+        alert(`${name} ${rec.message}`);
+      } else {
+        alert('추가에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('추가에 실패했습니다.');
+    }
+  };
+
   useEffect(() => {
     const fetchRecommendList = async () => {
       try {
@@ -237,7 +272,9 @@ export default function FoodDetail() {
       }
     };
 
-    fetchRecommendList();
+    if (id.startsWith('user')) {
+      fetchRecommendList();
+    }
   }, [id, currentUserId, recommend]);
 
   useEffect(() => {
@@ -271,34 +308,47 @@ export default function FoodDetail() {
   return (
     <FoodDetailWrapper className='detail__wrapper'>
       <div className='detail__top'>
-        {typeof id === 'number' ? <p>유저등록</p> : ''}
+        {id.startsWith('user') ? <p>유저등록</p> : ''}
         <h1>{name}</h1>
+        <div className='back' onClick={() => router.back()}>
+          <IoIosArrowBack />
+        </div>
       </div>
       <div className='detail__img'>
         <img src={`${img}`} alt={name} />
       </div>
-      <div className='thumb'>
-        <FontAwesomeIcon
-          icon={faThumbsUp}
-          onClick={() => clickThumb('up')}
-          className={currentUserRecommend === 'up' ? 'up' : ''}
-        />
-        <FontAwesomeIcon
-          icon={faThumbsDown}
-          onClick={() => clickThumb('down')}
-          className={currentUserRecommend === 'down' ? 'down' : ''}
-        />
-      </div>
-      <ProgressBar now={percentage} />
-      {upRecommend >= allRecommend - upRecommend ? (
-        <p className='left'>
-          {percentage}%의 유저가 {name}을 추천해요!
-        </p>
+      {id.startsWith('user') ? (
+        <div className='thumb'>
+          <FontAwesomeIcon
+            icon={faThumbsUp}
+            onClick={() => clickThumb('up')}
+            className={currentUserRecommend === 'up' ? 'up' : ''}
+          />
+          <FontAwesomeIcon
+            icon={faThumbsDown}
+            onClick={() => clickThumb('down')}
+            className={currentUserRecommend === 'down' ? 'down' : ''}
+          />
+        </div>
       ) : (
-        <p className='right'>
-          {Math.round(((allRecommend - upRecommend) / allRecommend) * 100)}%의
-          유저가 비추천해요!
-        </p>
+        ''
+      )}
+      {id.startsWith('user') ? <ProgressBar now={percentage} /> : ''}
+      {id.startsWith('user') ? (
+        <div>
+          {upRecommend >= allRecommend - upRecommend ? (
+            <p className='left'>
+              {percentage}%의 유저가 {name}을 추천해요!
+            </p>
+          ) : (
+            <p className='right'>
+              {Math.round(((allRecommend - upRecommend) / allRecommend) * 100)}
+              %의 유저가 비추천해요!
+            </p>
+          )}
+        </div>
+      ) : (
+        ''
       )}
       <div className='detail__info'>
         <p>
@@ -307,10 +357,10 @@ export default function FoodDetail() {
         <p>열량: {calorie}kcal</p>
         {/* <p>그 외 정보들</p> */}
       </div>
-      <div className='detail__plus'>
+      <div className='detail__plus' onClick={addTodayFood}>
         <FontAwesomeIcon icon={faSquarePlus} />
       </div>
-      {typeof id === 'number' && user_id === currentUserId ? (
+      {id.startsWith('user') && user_id === currentUserId ? (
         <div className='detail__btn'>
           <button onClick={goToModify}>수정</button>
           <button onClick={deleteFood}>삭제</button>

@@ -1,11 +1,27 @@
+import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const ExerciseDetailWrapper = styled.div`
   text-align: center;
-  h1 {
-    font-weight: bold;
+  .detail_top {
+    display: flex;
+    justify-content: center;
+    h1 {
+      font-weight: bold;
+    }
+    span {
+      /* display: flex; */
+      /* align-items: center; */
+      /* justify-content: center; */
+      margin-left: 10px;
+      font-size: 30px;
+      svg {
+        cursor: pointer;
+      }
+    }
   }
   p {
     margin: 30px 0;
@@ -36,13 +52,38 @@ const ExerciseDetailWrapper = styled.div`
 
 export default function ExerciseDetail() {
   const router = useRouter();
-  const { name, MET } = JSON.parse(router.query.data as string);
+  const { name, MET, id } = JSON.parse(router.query.data as string);
   const [min, setMin] = useState(0);
   const [userName, setUserName] = useState('');
   const [userWeight, setUserWeight] = useState(0);
+  const [currentUserID, setCurrentUserID] = useState('');
 
   const changeMin = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMin(parseInt(e.target.value));
+  };
+
+  const addTodayExercise = async () => {
+    try {
+      const res = await fetch('/api/exercise/todayExercise', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: currentUserID,
+          exercise_id: id,
+        }),
+      });
+
+      if (res.ok) {
+        const rec = await res.json();
+        alert(`${name} ${rec.message}`);
+      } else {
+        alert('추가에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('추가에 실패했습니다.');
+    }
   };
 
   useEffect(() => {
@@ -59,6 +100,7 @@ export default function ExerciseDetail() {
             const data = await response.json();
             setUserName(data.user.nickname);
             setUserWeight(data.userProfile.weight);
+            setCurrentUserID(data.user.user_id);
           } else {
             throw new Error('데이터를 불러오는 데 실패했습니다.');
           }
@@ -73,7 +115,12 @@ export default function ExerciseDetail() {
 
   return (
     <ExerciseDetailWrapper>
-      <h1>{name}</h1>
+      <div className='detail_top'>
+        <h1>{name}</h1>
+        <span onClick={addTodayExercise}>
+          <FontAwesomeIcon icon={faSquarePlus} />
+        </span>
+      </div>
       <p>{userName}님 기준</p>
       <div className='calculation'>
         <input type='number' onChange={changeMin} value={min} />

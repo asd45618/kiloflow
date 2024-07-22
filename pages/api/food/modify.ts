@@ -47,9 +47,9 @@ export default async function handler(
     const profileImageUrl = req.file ? `/uploads/${req.file.filename}` : img;
 
     const updatedUserFood = await prisma.userFoodList.update({
-      where: { food_id: Number(food_id) },
+      where: { food_id: food_id },
       data: {
-        food_id: Number(food_id),
+        food_id: food_id,
         menu,
         pro: Number(pro),
         carb: Number(carb),

@@ -41,16 +41,19 @@ export default async function handler(
     // Multer 미들웨어 실행
     await runMiddleware(req, res, upload.single('img'));
 
-    const { menu, img, pro, carb, fat, calorie, user_id } = req.body;
+    const { food_id, menu, img, pro, carb, fat, calorie, user_id } = req.body;
 
-    if (!menu || !pro || !carb || !fat || !calorie || !user_id) {
+    if (!food_id || !menu || !pro || !carb || !fat || !calorie || !user_id) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
+    const userFoodId = 'user_' + food_id;
+    console.log(userFoodId);
     const profileImageUrl = req.file ? `/uploads/${req.file.filename}` : img;
 
     const newUser = await prisma.userFoodList.create({
       data: {
+        food_id: userFoodId,
         menu,
         pro: Number(pro),
         carb: Number(carb),

@@ -69,6 +69,7 @@ export default function ExerciseList() {
   const [exerciseList, setExerciseList] = useState<ExerciseItem[]>([]);
   const [searchList, setSearchList] = useState<ExerciseItem[]>([]);
   const [keyWord, setKeyWord] = useState('');
+  const [currentUserID, setCurrentUserID] = useState('');
 
   const changeKeyWord = (e: React.ChangeEvent<HTMLInputElement>) => {
     setKeyWord(e.target.value);
@@ -77,6 +78,30 @@ export default function ExerciseList() {
   const search = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchList(exerciseList.filter((item) => item.name.includes(keyWord)));
+  };
+
+  const addTodayExercise = async (exercise: ExerciseItem) => {
+    try {
+      const res = await fetch('/api/exercise/todayExercise', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: currentUserID,
+          exercise_id: exercise.id,
+        }),
+      });
+
+      if (res.ok) {
+        const rec = await res.json();
+        alert(`${exercise.name} ${rec.message}`);
+      } else {
+        alert('추가에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('추가에 실패했습니다.');
+    }
   };
 
   useEffect(() => {
@@ -100,6 +125,31 @@ export default function ExerciseList() {
     !keyWord ? setSearchList([]) : '';
   }, [keyWord]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setCurrentUserID(data.user.user_id);
+          } else {
+            throw new Error('데이터를 불러오는 데 실패했습니다.');
+          }
+        }
+      } catch (error) {
+        console.error('API 요청 에러:', error);
+        // 에러 처리 로직 추가
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <ExerciseListWrapper>
       <div className='search'>
@@ -109,7 +159,7 @@ export default function ExerciseList() {
         </form>
       </div>
       {!searchList.length
-        ? exerciseList.map((exercise: any) => (
+        ? exerciseList.map((exercise: ExerciseItem) => (
             <div className='exercise__info' key={exercise.id}>
               <Link
                 href={{
@@ -123,12 +173,15 @@ export default function ExerciseList() {
                 {exercise.name}
               </Link>
               <div>{exercise.MET}MET</div>
-              <div className='detail__btn'>
+              <div
+                className='detail__btn'
+                onClick={() => addTodayExercise(exercise)}
+              >
                 <FontAwesomeIcon icon={faSquarePlus} />
               </div>
             </div>
           ))
-        : searchList.map((exercise: any) => (
+        : searchList.map((exercise: ExerciseItem) => (
             <div className='exercise__info' key={exercise.id}>
               <Link
                 href={{
@@ -142,7 +195,10 @@ export default function ExerciseList() {
                 {exercise.name}
               </Link>
               <div>{exercise.MET}MET</div>
-              <div className='detail__btn'>
+              <div
+                className='detail__btn'
+                onClick={() => addTodayExercise(exercise)}
+              >
                 <FontAwesomeIcon icon={faSquarePlus} />
               </div>
             </div>

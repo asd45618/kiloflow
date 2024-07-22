@@ -21,6 +21,8 @@ model users {
   chatrooms              chatrooms[]
   recommends             recommend[]
   userFoodList           userFoodList[]
+  todayFood              todayFood[]
+  todayExercise          todayExercise[]
 
   @@index([user_id])
 }
@@ -42,7 +44,7 @@ model UserProfile {
 }
 
 model userFoodList {
-  food_id       Int      @id @default(autoincrement())
+  food_id       String      @id
   user_id       Int
   menu          String      
   calorie       Int
@@ -120,7 +122,7 @@ model notices {
 model recommend {
   id          Int           @id @default(autoincrement())
   user_id     Int
-  food_id     Int
+  food_id     String
   recommend   String
 
   user        users         @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
@@ -128,4 +130,26 @@ model recommend {
 
   @@index([user_id])
   @@index([food_id])
+}
+
+model todayFood {
+  id          Int           @id @default(autoincrement())
+  user_id     Int
+  food_id     String
+  added_at    DateTime      @default(now())
+
+  user        users         @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model todayExercise {
+  id          Int           @id @default(autoincrement())
+  user_id     Int
+  exercise_id Int
+  added_at    DateTime      @default(now())
+
+  user        users         @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
 }

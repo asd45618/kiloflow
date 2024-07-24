@@ -60,6 +60,13 @@ const PersonalInfoBlock = styled.div`
       }
     }
   }
+  .leave__button {
+    margin-top: 30px;
+
+    span {
+      padding: 15px;
+    }
+  }
 `;
 
 const PersonalInfo = ({ currentUserInfo }: { currentUserInfo: any }) => {
@@ -155,6 +162,11 @@ const PersonalInfo = ({ currentUserInfo }: { currentUserInfo: any }) => {
       document.removeEventListener("click", handleOutsideClick);
     };
   }, [showButtons]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/auth/login");
+  };
 
   if (!currentUserInfo) return <div>Loading...</div>;
 
@@ -285,6 +297,13 @@ const PersonalInfo = ({ currentUserInfo }: { currentUserInfo: any }) => {
           수정
         </button>
       </form>
+
+      <div className="leave__button">
+        <button onClick={handleLogout}>로그아웃</button>
+        <span>|</span>
+        <button>회원탈퇴</button>
+        {/* 아직 탈퇴기능 미구현 */}
+      </div>
 
       <ProfileImageModal
         isOpen={imageSelectModalIsOpen}

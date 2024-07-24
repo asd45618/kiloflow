@@ -8,6 +8,7 @@ import styled from "styled-components";
 import CalendarTab from "../components/main/calendarTab";
 
 import TodayFoodList from "../components/main/todayFoodList";
+import TodayExerciseList from "../components/main/todayExerciseList";
 
 dayjs.extend(weekOfYear);
 
@@ -134,6 +135,10 @@ const Home = () => {
       {currentTab === "week" && (
         <>
           <TodayFoodList
+            userId={currentUser.user_id}
+            selectedDate={selectedDate}
+          />
+          <TodayExerciseList
             userId={currentUser.user_id}
             selectedDate={selectedDate}
           />

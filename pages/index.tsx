@@ -7,6 +7,8 @@ import "react-calendar/dist/Calendar.css";
 import styled from "styled-components";
 import CalendarTab from "../components/main/calendarTab";
 
+import TodayFoodList from "../components/main/todayFoodList";
+
 dayjs.extend(weekOfYear);
 
 const HomeBlock = styled.div`
@@ -129,6 +131,15 @@ const Home = () => {
         formatMonthYear={(locale, date) => formatLabel(date)}
         formatDay={(locale, date) => dayjs(date).date().toString()}
       />
+      {currentTab === "week" && (
+        <>
+          <TodayFoodList
+            userId={currentUser.user_id}
+            selectedDate={selectedDate}
+          />
+        </>
+      )}
+      {currentTab === "month" && <></>}
     </HomeBlock>
   );
 };

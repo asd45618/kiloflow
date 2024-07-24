@@ -1,11 +1,12 @@
-import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import { IoIosArrowBack } from 'react-icons/io';
-import styled from 'styled-components';
+import { faSquarePlus } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { IoIosArrowBack } from "react-icons/io";
+import styled from "styled-components";
 
 const ExerciseDetailWrapper = styled.div`
+  padding: 10px;
   text-align: center;
   .detail_top {
     display: flex;
@@ -16,9 +17,6 @@ const ExerciseDetailWrapper = styled.div`
       font-weight: bold;
     }
     span {
-      /* display: flex; */
-      /* align-items: center; */
-      /* justify-content: center; */
       margin-left: 10px;
       font-size: 30px;
       svg {
@@ -58,50 +56,61 @@ const ExerciseDetailWrapper = styled.div`
     span {
     }
   }
+  .detail__plus {
+    margin-top: 40px;
+    svg {
+      font-size: 30px;
+      cursor: pointer;
+    }
+  }
 `;
 
 export default function ExerciseDetail() {
   const router = useRouter();
   const { name, MET, id } = JSON.parse(router.query.data as string);
   const [min, setMin] = useState(0);
-  const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useState("");
   const [userWeight, setUserWeight] = useState(0);
-  const [currentUserID, setCurrentUserID] = useState('');
+  const [currentUserID, setCurrentUserID] = useState("");
 
   const changeMin = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMin(parseInt(e.target.value));
   };
 
   const addTodayExercise = async () => {
+    const calories = (MET * 3.5 * userWeight * min) / 200;
     try {
-      const res = await fetch('/api/exercise/todayExercise', {
-        method: 'POST',
+      const res = await fetch("/api/exercise/todayExercise", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           user_id: currentUserID,
           exercise_id: id,
+          duration: min,
+          calories: calories,
         }),
       });
 
       if (res.ok) {
         const rec = await res.json();
         alert(`${name} ${rec.message}`);
+        router.back();
       } else {
-        alert('추가에 실패했습니다.');
+        alert("추가에 실패했습니다.");
       }
     } catch (err) {
-      alert('추가에 실패했습니다.');
+      alert("추가에 실패했습니다.");
     }
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (token) {
-          const response = await fetch('/api/auth/me', {
+          const response = await fetch("/api/auth/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -112,12 +121,11 @@ export default function ExerciseDetail() {
             setUserWeight(data.userProfile.weight);
             setCurrentUserID(data.user.user_id);
           } else {
-            throw new Error('데이터를 불러오는 데 실패했습니다.');
+            throw new Error("데이터를 불러오는 데 실패했습니다.");
           }
         }
       } catch (error) {
-        console.error('API 요청 에러:', error);
-        // 에러 처리 로직 추가
+        console.error("API 요청 에러:", error);
       }
     };
     fetchData();
@@ -125,23 +133,23 @@ export default function ExerciseDetail() {
 
   return (
     <ExerciseDetailWrapper>
-      <div className='detail_top'>
+      <div className="detail_top">
         <h1>{name}</h1>
-        <span onClick={addTodayExercise}>
-          <FontAwesomeIcon icon={faSquarePlus} />
-        </span>
-        <div className='back' onClick={() => router.back()}>
+
+        <div className="back" onClick={() => router.back()}>
           <IoIosArrowBack />
         </div>
       </div>
       <p>{userName}님 기준</p>
-      <div className='calculation'>
-        <input type='number' onChange={changeMin} value={min} />
+      <div className="calculation">
+        <input type="number" onChange={changeMin} value={min} />
         <span>
-          분에 약{' '}
-          {min ? Math.round((MET * 3.5 * userWeight * min) / 1000) * 5 : 0}kcal
-          소모 가능합니다.
+          분에 약 {min ? Math.round((MET * 3.5 * userWeight * min) / 200) : 0}{" "}
+          kcal 소모 가능합니다.
         </span>
+      </div>
+      <div className="detail__plus" onClick={addTodayExercise}>
+        <FontAwesomeIcon icon={faSquarePlus} />
       </div>
     </ExerciseDetailWrapper>
   );

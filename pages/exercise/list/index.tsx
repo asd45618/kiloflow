@@ -1,16 +1,11 @@
-import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
-import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import { faSquarePlus } from "@fortawesome/free-regular-svg-icons";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import styled from "styled-components";
 
 const ExerciseListWrapper = styled.div`
-  /* h1 {
-    text-align: center;
-    font-size: 32px;
-    font-weight: bold;
-  } */
   .search {
     text-align: center;
     margin: 20px 0;
@@ -68,8 +63,8 @@ interface ExerciseItem {
 export default function ExerciseList() {
   const [exerciseList, setExerciseList] = useState<ExerciseItem[]>([]);
   const [searchList, setSearchList] = useState<ExerciseItem[]>([]);
-  const [keyWord, setKeyWord] = useState('');
-  const [currentUserID, setCurrentUserID] = useState('');
+  const [keyWord, setKeyWord] = useState("");
+  const [currentUserID, setCurrentUserID] = useState("");
 
   const changeKeyWord = (e: React.ChangeEvent<HTMLInputElement>) => {
     setKeyWord(e.target.value);
@@ -80,41 +75,17 @@ export default function ExerciseList() {
     setSearchList(exerciseList.filter((item) => item.name.includes(keyWord)));
   };
 
-  const addTodayExercise = async (exercise: ExerciseItem) => {
-    try {
-      const res = await fetch('/api/exercise/todayExercise', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: currentUserID,
-          exercise_id: exercise.id,
-        }),
-      });
-
-      if (res.ok) {
-        const rec = await res.json();
-        alert(`${exercise.name} ${rec.message}`);
-      } else {
-        alert('추가에 실패했습니다.');
-      }
-    } catch (err) {
-      alert('추가에 실패했습니다.');
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/exercise/list');
+        const response = await fetch("/api/exercise/list");
         if (!response.ok) {
-          throw new Error('데이터를 불러오는 데 실패했습니다.');
+          throw new Error("데이터를 불러오는 데 실패했습니다.");
         }
         const data = await response.json();
         setExerciseList(data);
       } catch (error) {
-        console.error('API 요청 에러:', error);
+        console.error("API 요청 에러:", error);
       }
     };
 
@@ -122,15 +93,15 @@ export default function ExerciseList() {
   }, []);
 
   useEffect(() => {
-    !keyWord ? setSearchList([]) : '';
+    !keyWord ? setSearchList([]) : "";
   }, [keyWord]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (token) {
-          const response = await fetch('/api/auth/me', {
+          const response = await fetch("/api/auth/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -139,11 +110,11 @@ export default function ExerciseList() {
             const data = await response.json();
             setCurrentUserID(data.user.user_id);
           } else {
-            throw new Error('데이터를 불러오는 데 실패했습니다.');
+            throw new Error("데이터를 불러오는 데 실패했습니다.");
           }
         }
       } catch (error) {
-        console.error('API 요청 에러:', error);
+        console.error("API 요청 에러:", error);
         // 에러 처리 로직 추가
       }
     };
@@ -152,15 +123,15 @@ export default function ExerciseList() {
 
   return (
     <ExerciseListWrapper>
-      <div className='search'>
+      <div className="search">
         <form onSubmit={search}>
-          <input type='text' value={keyWord} onChange={changeKeyWord} />
+          <input type="text" value={keyWord} onChange={changeKeyWord} />
           <FontAwesomeIcon icon={faMagnifyingGlass} onClick={search} />
         </form>
       </div>
       {!searchList.length
         ? exerciseList.map((exercise: ExerciseItem) => (
-            <div className='exercise__info' key={exercise.id}>
+            <div className="exercise__info" key={exercise.id}>
               <Link
                 href={{
                   pathname: `/exercise/detail/${exercise.id}`,
@@ -173,16 +144,23 @@ export default function ExerciseList() {
                 {exercise.name}
               </Link>
               <div>{exercise.MET}MET</div>
-              <div
-                className='detail__btn'
-                onClick={() => addTodayExercise(exercise)}
-              >
-                <FontAwesomeIcon icon={faSquarePlus} />
+              <div className="detail__btn">
+                <Link
+                  href={{
+                    pathname: `/exercise/detail/${exercise.id}`,
+                    query: {
+                      data: JSON.stringify(exercise),
+                    },
+                  }}
+                  as={`/exercise/detail/${exercise.id}`}
+                >
+                  <FontAwesomeIcon icon={faSquarePlus} />
+                </Link>
               </div>
             </div>
           ))
         : searchList.map((exercise: ExerciseItem) => (
-            <div className='exercise__info' key={exercise.id}>
+            <div className="exercise__info" key={exercise.id}>
               <Link
                 href={{
                   pathname: `/exercise/detail/${exercise.id}`,
@@ -195,11 +173,18 @@ export default function ExerciseList() {
                 {exercise.name}
               </Link>
               <div>{exercise.MET}MET</div>
-              <div
-                className='detail__btn'
-                onClick={() => addTodayExercise(exercise)}
-              >
-                <FontAwesomeIcon icon={faSquarePlus} />
+              <div className="detail__btn">
+                <Link
+                  href={{
+                    pathname: `/exercise/detail/${exercise.id}`,
+                    query: {
+                      data: JSON.stringify(exercise),
+                    },
+                  }}
+                  as={`/exercise/detail/${exercise.id}`}
+                >
+                  <FontAwesomeIcon icon={faSquarePlus} />
+                </Link>
               </div>
             </div>
           ))}

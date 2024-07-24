@@ -159,9 +159,12 @@ model todayExercise {
   id          Int           @id @default(autoincrement())
   user_id     Int
   exercise_id Int
+  duration    Int
+  calories    Float
   added_at    DateTime      @default(now())
 
   user        users         @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@index([user_id])
 }
+

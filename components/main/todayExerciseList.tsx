@@ -1,6 +1,5 @@
-import styled from "styled-components";
 import { useEffect, useState } from "react";
-import dayjs from "dayjs";
+import styled from "styled-components";
 
 const TodayExerciseListBlock = styled.div`
   padding: 20px;
@@ -15,6 +14,8 @@ interface Exercise {
   exercise_id: number;
   name: string;
   MET: string;
+  duration: number;
+  calories: number;
   added_at: string;
 }
 
@@ -36,12 +37,12 @@ const TodayExerciseList: React.FC<TodayExerciseListProps> = ({
           `/api/exercise/todayExercise?user_id=${userId}&date=${selectedDate.toISOString()}`
         );
         if (!res.ok) {
-          throw new Error("운동리스트 가져오기 실패");
+          throw new Error("Failed to fetch exercise list");
         }
         const data = await res.json();
         setExerciseList(data);
       } catch (error) {
-        console.error("운동리스트 패치 실패", error);
+        console.error("Failed to fetch exercise list:", error);
       }
     };
 
@@ -55,8 +56,16 @@ const TodayExerciseList: React.FC<TodayExerciseListProps> = ({
         {exerciseList.map((exercise) => (
           <li key={exercise.exercise_id}>
             <p>운동명: {exercise.name}</p>
-            <p>MET: {exercise.MET}</p>
-            <p>추가한 시간: {dayjs(exercise.added_at).format("A hh:mm")}</p>
+            <p>운동 시간: {exercise.duration} 분</p>
+            <p>소모 칼로리: {exercise.calories} kcal</p>
+            <p>
+              추가 시간:{" "}
+              {new Date(exercise.added_at).toLocaleTimeString("ko-KR", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })}
+            </p>
           </li>
         ))}
       </ul>

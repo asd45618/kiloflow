@@ -15,11 +15,13 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     try {
-      const { user_id, exercise_id } = req.body;
+      const { user_id, exercise_id, duration, calories } = req.body;
       await prisma.todayExercise.create({
         data: {
           user_id: Number(user_id),
           exercise_id: exercise_id,
+          duration: duration,
+          calories: calories,
         },
       });
 
@@ -52,8 +54,6 @@ export default async function handler(
         (exercise) => exercise.exercise_id
       );
 
-      console.log("오늘운동아이디", exerciseIds);
-
       const response = await fetch(
         "https://api.odcloud.kr/api/15068730/v1/uddi:2dd1a2cb-6030-48a2-980d-c31f0cc18b6c?page=1&perPage=15&serviceKey=9QBTARbvzv2jtn%2Fkukph5k4O6ArctzriUp6IXMfHSUYt8fmmfoQRjDqpCrZGYhJ4wCubV30EVCm928oL18EL%2BA%3D%3D"
       );
@@ -70,14 +70,11 @@ export default async function handler(
         exercise.id = index + 1;
       });
 
-      console.log("모든운동", allApiExercises);
-
       const exerciseData = exerciseIds
         .map((id) => {
           const apiExercise = allApiExercises.find(
             (exercise) => exercise.id === id
           );
-          console.log("apiExercise", apiExercise);
           if (!apiExercise) {
             return null;
           }
@@ -89,12 +86,12 @@ export default async function handler(
             exercise_id: id,
             name: apiExercise.운동명,
             MET: apiExercise.MET계수,
+            duration: addedExercise?.duration,
+            calories: addedExercise?.calories,
             added_at: addedExercise?.added_at,
           };
         })
         .filter(Boolean);
-
-      console.log("오늘운동", exerciseData);
 
       return res.status(200).json(exerciseData);
     } catch (error: any) {

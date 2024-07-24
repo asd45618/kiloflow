@@ -9,6 +9,7 @@ import CalendarTab from "../components/main/calendarTab";
 
 import TodayFoodList from "../components/main/todayFoodList";
 import TodayExerciseList from "../components/main/todayExerciseList";
+import DailyAchievement from "../components/main/dailyAchievement";
 
 dayjs.extend(weekOfYear);
 
@@ -27,6 +28,33 @@ const StyledCalendar = styled(Calendar)`
   }
 `;
 
+const ListBlock = styled.div`
+  width: 100%;
+  background-color: #f5f5f5;
+  .button__container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+`;
+
+const ToggleButton = styled.button<{ active: boolean }>`
+  background-color: ${({ active }) => (active ? "#007bff" : "#fff")};
+  color: ${({ active }) => (active ? "#fff" : "#000")};
+  border: 1px solid #007bff;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin: 0 10px;
+
+  &:hover {
+    background-color: #0056b3;
+    color: #fff;
+  }
+`;
+
+const DailyAchievementBlock = styled.div``;
+
 type User = {
   user_id: number;
   nickname: string;
@@ -41,6 +69,7 @@ const Home = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentTab, setCurrentTab] = useState<Tab>("week");
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [todayList, setTodayList] = useState("food");
   const router = useRouter();
 
   useEffect(() => {
@@ -134,14 +163,40 @@ const Home = () => {
       />
       {currentTab === "week" && (
         <>
-          <TodayFoodList
-            userId={currentUser.user_id}
-            selectedDate={selectedDate}
-          />
-          <TodayExerciseList
-            userId={currentUser.user_id}
-            selectedDate={selectedDate}
-          />
+          <ListBlock>
+            <div className="button__container">
+              <ToggleButton
+                active={todayList === "food"}
+                onClick={() => setTodayList("food")}
+              >
+                오늘의 식단
+              </ToggleButton>
+              <ToggleButton
+                active={todayList === "exercise"}
+                onClick={() => setTodayList("exercise")}
+              >
+                오늘의 운동
+              </ToggleButton>
+            </div>
+            {todayList === "food" && (
+              <TodayFoodList
+                userId={currentUser.user_id}
+                selectedDate={selectedDate}
+              />
+            )}
+            {todayList === "exercise" && (
+              <TodayExerciseList
+                userId={currentUser.user_id}
+                selectedDate={selectedDate}
+              />
+            )}
+          </ListBlock>
+          <DailyAchievementBlock>
+            <DailyAchievement
+              userId={currentUser.user_id}
+              selectedDate={selectedDate}
+            />
+          </DailyAchievementBlock>
         </>
       )}
       {currentTab === "month" && <></>}

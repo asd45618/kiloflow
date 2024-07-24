@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 
 const TodayFoodListBlock = styled.div`
   padding: 20px;
-  background-color: #f5f5f5;
+
   border-radius: 8px;
   width: 100%;
   max-width: 600px;

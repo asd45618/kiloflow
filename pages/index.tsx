@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import dayjs from "dayjs";
 import weekOfYear from "dayjs/plugin/weekOfYear";
@@ -6,10 +6,10 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import styled from "styled-components";
 import CalendarTab from "../components/main/calendarTab";
-
 import TodayFoodList from "../components/main/todayFoodList";
 import TodayExerciseList from "../components/main/todayExerciseList";
 import DailyAchievement from "../components/main/dailyAchievement";
+import CalorieBar from "../components/main/calorieBar";
 
 dayjs.extend(weekOfYear);
 
@@ -27,6 +27,8 @@ const StyledCalendar = styled(Calendar)`
     display: none !important;
   }
 `;
+
+const CalorieBarBlock = styled.div``;
 
 const ListBlock = styled.div`
   width: 100%;
@@ -70,6 +72,9 @@ const Home = () => {
   const [currentTab, setCurrentTab] = useState<Tab>("week");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todayList, setTodayList] = useState("food");
+  const [todayFoodData, setTodayFoodData] = useState([]);
+  const [todayExerciseData, setTodayExerciseData] = useState([]);
+  const [dailyCalories, setDailyCalories] = useState(2000); // 예시로 기본값 설정
   const router = useRouter();
 
   useEffect(() => {
@@ -85,6 +90,7 @@ const Home = () => {
         if (res.ok) {
           const data = await res.json();
           setCurrentUser(data.user);
+          setDailyCalories(data.user.daily_calories); // 사용자 정보에 daily_calories가 있다고 가정
         } else {
           localStorage.removeItem("token");
           router.push("/auth/login");
@@ -96,6 +102,30 @@ const Home = () => {
 
     fetchCurrentUser();
   }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      const fetchTodayData = async () => {
+        const foodRes = await fetch(
+          `/api/food/todayFood?user_id=${
+            currentUser.user_id
+          }&date=${selectedDate.toISOString()}`
+        );
+        const foodData = await foodRes.json();
+        setTodayFoodData(foodData);
+
+        const exerciseRes = await fetch(
+          `/api/exercise/todayExercise?user_id=${
+            currentUser.user_id
+          }&date=${selectedDate.toISOString()}`
+        );
+        const exerciseData = await exerciseRes.json();
+        setTodayExerciseData(exerciseData);
+      };
+
+      fetchTodayData();
+    }
+  }, [currentUser, selectedDate]);
 
   const handleDateChange = (value: Date) => {
     setSelectedDate(value);
@@ -153,7 +183,7 @@ const Home = () => {
         handleNext={handleNext}
       />
       <StyledCalendar
-        key={selectedDate.toString()} // Add key to force re-render
+        key={selectedDate.toString()}
         onChange={(value) => handleDateChange(value as Date)}
         value={selectedDate}
         view="month"
@@ -163,6 +193,13 @@ const Home = () => {
       />
       {currentTab === "week" && (
         <>
+          <CalorieBarBlock>
+            <CalorieBar
+              foodData={todayFoodData}
+              exerciseData={todayExerciseData}
+              dailyCalories={dailyCalories}
+            />
+          </CalorieBarBlock>
           <ListBlock>
             <div className="button__container">
               <ToggleButton
@@ -178,23 +215,17 @@ const Home = () => {
                 오늘의 운동
               </ToggleButton>
             </div>
-            {todayList === "food" && (
-              <TodayFoodList
-                userId={currentUser.user_id}
-                selectedDate={selectedDate}
-              />
-            )}
+            {todayList === "food" && <TodayFoodList foodData={todayFoodData} />}
             {todayList === "exercise" && (
-              <TodayExerciseList
-                userId={currentUser.user_id}
-                selectedDate={selectedDate}
-              />
+              <TodayExerciseList exerciseData={todayExerciseData} />
             )}
           </ListBlock>
           <DailyAchievementBlock>
             <DailyAchievement
               userId={currentUser.user_id}
               selectedDate={selectedDate}
+              foodData={todayFoodData}
+              exerciseData={todayExerciseData}
             />
           </DailyAchievementBlock>
         </>

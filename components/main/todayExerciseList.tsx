@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 
 const TodayExerciseListBlock = styled.div`
@@ -20,40 +20,17 @@ interface Exercise {
 }
 
 interface TodayExerciseListProps {
-  userId: number;
-  selectedDate: Date;
+  exerciseData: Exercise[];
 }
 
 const TodayExerciseList: React.FC<TodayExerciseListProps> = ({
-  userId,
-  selectedDate,
+  exerciseData,
 }) => {
-  const [exerciseList, setExerciseList] = useState<Exercise[]>([]);
-
-  useEffect(() => {
-    const fetchExerciseList = async () => {
-      try {
-        const res = await fetch(
-          `/api/exercise/todayExercise?user_id=${userId}&date=${selectedDate.toISOString()}`
-        );
-        if (!res.ok) {
-          throw new Error("Failed to fetch exercise list");
-        }
-        const data = await res.json();
-        setExerciseList(data);
-      } catch (error) {
-        console.error("Failed to fetch exercise list:", error);
-      }
-    };
-
-    fetchExerciseList();
-  }, [userId, selectedDate]);
-
   return (
     <TodayExerciseListBlock>
       <h3>오늘 한 운동</h3>
       <ul>
-        {exerciseList.map((exercise) => (
+        {exerciseData.map((exercise) => (
           <li key={exercise.exercise_id}>
             <p>운동명: {exercise.name}</p>
             <p>운동 시간: {exercise.duration} 분</p>

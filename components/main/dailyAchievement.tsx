@@ -1,5 +1,3 @@
-// components/main/dailyAchievement.tsx
-
 import React, { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import styled from "styled-components";
@@ -24,14 +22,26 @@ const MessageWrapper = styled.div`
   font-size: 18px;
 `;
 
+interface Food {
+  calorie: number;
+}
+
+interface Exercise {
+  calories: number;
+}
+
 interface DailyAchievementProps {
   userId: number;
   selectedDate: Date;
+  foodData: Food[];
+  exerciseData: Exercise[];
 }
 
 const DailyAchievement: React.FC<DailyAchievementProps> = ({
   userId,
   selectedDate,
+  foodData,
+  exerciseData,
 }) => {
   const [dailyCalories, setDailyCalories] = useState(0);
   const [consumedCalories, setConsumedCalories] = useState(0);
@@ -41,7 +51,7 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserProfile = async () => {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch("/api/auth/me", {
@@ -59,36 +69,19 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
 
         setDailyCalories(userProfile.daily_calories);
 
-        const foodRes = await fetch(
-          `/api/food/todayFood?user_id=${userId}&date=${selectedDate.toISOString()}`
-        );
-        const foodData = await foodRes.json();
         const totalConsumedCalories = foodData.reduce(
-          (total: number, food: any) => total + Number(food.calorie), // 문자열을 숫자로 변환
+          (total: number, food: any) => total + Number(food.calorie),
           0
         );
 
-        console.log("foodData", foodData);
-
         setConsumedCalories(totalConsumedCalories);
 
-        const exerciseRes = await fetch(
-          `/api/exercise/todayExercise?user_id=${userId}&date=${selectedDate.toISOString()}`
-        );
-        const exerciseData = await exerciseRes.json();
         const totalBurnedCalories = exerciseData.reduce(
           (total: number, exercise: any) => total + exercise.calories,
           0
         );
 
         setBurnedCalories(totalBurnedCalories);
-
-        console.log(
-          "데일리칼로리, 섭취칼로리, 운동칼로리",
-          dailyCalories,
-          totalConsumedCalories,
-          totalBurnedCalories
-        );
 
         let achievementRate = 0;
 
@@ -135,16 +128,15 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
         }
 
         setAchievement(achievementRate);
-        console.log("달성률", achievement, achievementRate);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
-        setLoading(false); // 데이터 패치 완료 후 로딩 상태 해제
+        setLoading(false);
       }
     };
 
-    fetchData();
-  }, [userId, selectedDate]);
+    fetchUserProfile();
+  }, [userId, selectedDate, foodData, exerciseData]);
 
   const data = {
     labels: ["달성률"],
@@ -159,13 +151,13 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
   };
 
   const options = {
-    cutout: "70%", // 가운데 비우기
+    cutout: "70%",
     plugins: {
       tooltip: {
-        enabled: false, // 툴팁 비활성화
+        enabled: false,
       },
       legend: {
-        display: false, // 범례 비활성화
+        display: false,
       },
     },
   };
@@ -191,7 +183,7 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
   };
 
   if (loading) {
-    return <div>Loading...</div>; // 로딩 상태일 때 표시할 내용
+    return <div>Loading...</div>;
   }
 
   return (

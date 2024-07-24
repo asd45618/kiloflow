@@ -1,11 +1,8 @@
 import styled from "styled-components";
-import { useEffect, useState } from "react";
-import Image from "next/image";
 import dayjs from "dayjs";
 
 const TodayFoodListBlock = styled.div`
   padding: 20px;
-
   border-radius: 8px;
   width: 100%;
   max-width: 600px;
@@ -24,40 +21,15 @@ interface Food {
 }
 
 interface TodayFoodListProps {
-  userId: number;
-  selectedDate: Date;
+  foodData: Food[];
 }
 
-const TodayFoodList: React.FC<TodayFoodListProps> = ({
-  userId,
-  selectedDate,
-}) => {
-  const [foodList, setFoodList] = useState<Food[]>([]);
-
-  useEffect(() => {
-    const fetchFoodList = async () => {
-      try {
-        const res = await fetch(
-          `/api/food/todayFood?user_id=${userId}&date=${selectedDate.toISOString()}`
-        );
-        if (!res.ok) {
-          throw new Error("Failed to fetch food list");
-        }
-        const data = await res.json();
-        setFoodList(data);
-      } catch (error) {
-        console.error("Failed to fetch food list:", error);
-      }
-    };
-
-    fetchFoodList();
-  }, [userId, selectedDate]);
-
+const TodayFoodList: React.FC<TodayFoodListProps> = ({ foodData }) => {
   return (
     <TodayFoodListBlock>
       <h3>오늘 먹은 음식</h3>
       <ul>
-        {foodList.map((food) => (
+        {foodData.map((food) => (
           <li key={food.food_id}>
             <img src={food.img} alt="foodimg" width={30} height={30} />
             <p>{food.name}</p>

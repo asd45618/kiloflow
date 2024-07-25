@@ -67,7 +67,8 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
         const data = await res.json();
         const userProfile = data.userProfile;
 
-        setDailyCalories(userProfile.daily_calories);
+        const dailyCalories = userProfile.daily_calories;
+        setDailyCalories(dailyCalories);
 
         const totalConsumedCalories = foodData.reduce(
           (total: number, food: any) => total + Number(food.calorie),
@@ -83,51 +84,27 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
 
         setBurnedCalories(totalBurnedCalories);
 
-        let achievementRate = 0;
+        // let achievementRate = 0;
 
         if (totalConsumedCalories < dailyCalories * 0.45) {
-          achievementRate = 0;
-          setMessage(
-            "섭취한 칼로리 열량이 너무 적습니다. 건강하고 지속가능한 다이어트를 위해 적절한 식이와 운동을 함께 병행하세요."
-          );
+          setAchievement(0);
         } else if (totalConsumedCalories <= dailyCalories) {
-          achievementRate =
-            ((totalConsumedCalories + totalBurnedCalories) / dailyCalories) *
-            100;
-
-          if (achievementRate >= 31 && achievementRate <= 40) {
-            setMessage("섭취 칼로리 양이 적절합니다. 조금 더 신경써보세요.");
-          } else if (achievementRate >= 41 && achievementRate <= 50) {
-            setMessage("섭취 칼로리 양이 괜찮습니다. 계속 유지하세요.");
-          } else if (achievementRate >= 51 && achievementRate <= 60) {
-            setMessage(
-              "섭취 칼로리가 목표에 가까워지고 있습니다. 잘하고 있어요!"
-            );
-          } else if (achievementRate >= 61 && achievementRate <= 70) {
-            setMessage("섭취 칼로리가 적절합니다. 잘하고 있습니다!");
-          } else if (achievementRate >= 71 && achievementRate <= 80) {
-            setMessage("섭취 칼로리가 좋습니다. 계속 유지하세요!");
-          } else if (achievementRate >= 81 && achievementRate <= 90) {
-            setMessage("섭취 칼로리가 아주 좋습니다. 계속하세요!");
-          } else if (achievementRate >= 91 && achievementRate <= 99) {
-            setMessage(
-              "섭취 칼로리가 거의 목표에 도달했습니다. 잘하고 있어요!"
-            );
-          } else if (achievementRate === 100) {
-            setMessage(
-              "오늘의 섭취 칼로리 목표를 완벽하게 달성했습니다! 계속해서 건강한 식습관을 유지하세요."
-            );
-          }
+          setAchievement(
+            Math.floor(
+              ((totalConsumedCalories + totalBurnedCalories) / dailyCalories) *
+                100
+            )
+          );
         } else {
-          achievementRate =
-            ((dailyCalories - totalBurnedCalories) / totalConsumedCalories) *
-            100;
-          setMessage(
-            "섭취 칼로리가 목표를 초과했습니다. 내일은 조금 더 신경써서 적정량을 섭취해보세요."
+          setAchievement(
+            Math.floor(
+              ((dailyCalories - totalBurnedCalories) / totalConsumedCalories) *
+                100
+            )
           );
         }
-
-        setAchievement(achievementRate);
+        console.log("ahievement", achievement);
+        // console.log("achievementRate", Math.floor(achievementRate));
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -137,6 +114,39 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
 
     fetchUserProfile();
   }, [userId, selectedDate, foodData, exerciseData]);
+
+  useEffect(() => {
+    if (consumedCalories < dailyCalories * 0.45) {
+      setMessage(
+        "섭취한 칼로리 열량이 너무 적습니다. 건강하고 지속가능한 다이어트를 위해 적절한 식이와 운동을 함께 병행하세요."
+      );
+    } else if (consumedCalories <= dailyCalories) {
+      if (achievement >= 31 && achievement <= 40) {
+        setMessage("섭취 칼로리 양이 적절합니다. 조금 더 신경써보세요.");
+      } else if (achievement >= 41 && achievement <= 50) {
+        setMessage("섭취 칼로리 양이 괜찮습니다. 계속 유지하세요.");
+      } else if (achievement >= 51 && achievement <= 60) {
+        setMessage("섭취 칼로리가 목표에 가까워지고 있습니다. 잘하고 있어요!");
+      } else if (achievement >= 61 && achievement <= 70) {
+        setMessage("섭취 칼로리가 적절합니다. 잘하고 있습니다!");
+      } else if (achievement >= 71 && achievement <= 80) {
+        setMessage("섭취 칼로리가 좋습니다. 계속 유지하세요!");
+      } else if (achievement >= 81 && achievement <= 90) {
+        setMessage("섭취 칼로리가 아주 좋습니다. 계속하세요!");
+      } else if (achievement >= 91 && achievement <= 99) {
+        setMessage("섭취 칼로리가 거의 목표에 도달했습니다. 잘하고 있어요!");
+      } else if (achievement === 100) {
+        setMessage(
+          "오늘의 섭취 칼로리 목표를 완벽하게 달성했습니다! 계속해서 건강한 식습관을 유지하세요."
+        );
+      }
+    } else {
+      setMessage(
+        "섭취 칼로리가 목표를 초과했습니다. 내일은 조금 더 신경써서 적정량을 섭취해보세요."
+      );
+    }
+    console.log("achievement", achievement);
+  }, [achievement, dailyCalories]);
 
   const data = {
     labels: ["달성률"],
@@ -192,7 +202,7 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
       <Doughnut
         data={data}
         options={options}
-        plugins={[createCenterTextPlugin(`${achievement.toFixed(0)}%`)]}
+        plugins={[createCenterTextPlugin(`${achievement}%`)]}
       />
       <MessageWrapper>{message}</MessageWrapper>
     </AchievementWrapper>

@@ -18,10 +18,11 @@ const CalorieInfo = styled.div`
 
 const GaugeWrapper = styled.div`
   width: 100%;
-  background-color: #e0e0e0;
+  background-color: #ffffff; // 배경을 흰색으로 설정
   border-radius: 20px;
   overflow: hidden;
   margin-bottom: 10px;
+  border: 1px solid #e0e0e0; // 회색 테두리 추가
 `;
 
 const Gauge = styled.div<{ width: number }>`
@@ -51,13 +52,25 @@ const CalorieBar: React.FC<CalorieBarProps> = ({
     0
   );
 
-  const percentage = Math.min((totalFoodCalories / dailyCalories) * 100, 100);
+  const percentage = Math.min(
+    Math.floor((totalFoodCalories / dailyCalories) * 100),
+    100
+  );
+
+  console.log(
+    "totalFood, totoalExercise, dailyCalorie",
+    totalFoodCalories,
+    totalExerciseCalories,
+    dailyCalories
+  );
+  console.log("kcalpercentage", percentage);
 
   return (
     <CalorieBarWrapper>
       <CalorieInfo>
         {totalFoodCalories} / {dailyCalories} kcal
       </CalorieInfo>
+      <p>{percentage}</p>
       <GaugeWrapper>
         <Gauge width={percentage} />
       </GaugeWrapper>

@@ -36,6 +36,7 @@ interface DailyAchievementProps {
   selectedDate: Date;
   foodData: Food[];
   exerciseData: Exercise[];
+  dailyCalories: number;
 }
 
 const DailyAchievement: React.FC<DailyAchievementProps> = ({
@@ -43,8 +44,8 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
   selectedDate,
   foodData,
   exerciseData,
+  dailyCalories,
 }) => {
-  const [dailyCalories, setDailyCalories] = useState(0);
   const [consumedCalories, setConsumedCalories] = useState(0);
   const [burnedCalories, setBurnedCalories] = useState(0);
   const [achievement, setAchievement] = useState(0);
@@ -52,65 +53,38 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    const totalConsumedCalories = foodData.reduce(
+      (total: number, food: any) => total + Number(food.calorie),
+      0
+    );
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch user profile");
-        }
+    setConsumedCalories(totalConsumedCalories);
 
-        const data = await res.json();
-        const userProfile = data.userProfile;
+    const totalBurnedCalories = exerciseData.reduce(
+      (total: number, exercise: any) => total + exercise.calories,
+      0
+    );
 
-        const dailyCalories = userProfile.daily_calories;
-        setDailyCalories(dailyCalories);
+    setBurnedCalories(totalBurnedCalories);
 
-        const totalConsumedCalories = foodData.reduce(
-          (total: number, food: any) => total + Number(food.calorie),
-          0
-        );
+    if (totalConsumedCalories < dailyCalories * 0.45) {
+      setAchievement(0);
+    } else if (totalConsumedCalories <= dailyCalories) {
+      setAchievement(
+        Math.floor(
+          ((totalConsumedCalories + totalBurnedCalories) / dailyCalories) * 100
+        )
+      );
+    } else {
+      setAchievement(
+        Math.floor(
+          ((dailyCalories - totalBurnedCalories) / totalConsumedCalories) * 100
+        )
+      );
+    }
 
-        setConsumedCalories(totalConsumedCalories);
-
-        const totalBurnedCalories = exerciseData.reduce(
-          (total: number, exercise: any) => total + exercise.calories,
-          0
-        );
-
-        setBurnedCalories(totalBurnedCalories);
-
-        if (totalConsumedCalories < dailyCalories * 0.45) {
-          setAchievement(0);
-        } else if (totalConsumedCalories <= dailyCalories) {
-          setAchievement(
-            Math.floor(
-              ((totalConsumedCalories + totalBurnedCalories) / dailyCalories) *
-                100
-            )
-          );
-        } else {
-          setAchievement(
-            Math.floor(
-              ((dailyCalories - totalBurnedCalories) / totalConsumedCalories) *
-                100
-            )
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, [userId, selectedDate, foodData, exerciseData]);
+    setLoading(false);
+  }, [dailyCalories, foodData, exerciseData]);
 
   useEffect(() => {
     if (consumedCalories < dailyCalories * 0.45) {
@@ -195,6 +169,8 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
   return (
     <AchievementWrapper>
       <h2>오늘의 달성률</h2>
+
+      <p>{achievement}</p>
       <Doughnut
         data={data}
         options={options}

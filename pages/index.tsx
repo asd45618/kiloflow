@@ -74,7 +74,7 @@ const Home = () => {
   const [todayList, setTodayList] = useState("food");
   const [todayFoodData, setTodayFoodData] = useState([]);
   const [todayExerciseData, setTodayExerciseData] = useState([]);
-  const [dailyCalories, setDailyCalories] = useState(2000); // 예시로 기본값 설정
+  const [dailyCalories, setDailyCalories] = useState(2000);
   const router = useRouter();
 
   useEffect(() => {
@@ -90,7 +90,7 @@ const Home = () => {
         if (res.ok) {
           const data = await res.json();
           setCurrentUser(data.user);
-          setDailyCalories(data.user.daily_calories); // 사용자 정보에 daily_calories가 있다고 가정
+          setDailyCalories(data.userProfile.daily_calories); // 권장섭취칼로리 가져옴
         } else {
           localStorage.removeItem("token");
           router.push("/auth/login");
@@ -226,6 +226,7 @@ const Home = () => {
               selectedDate={selectedDate}
               foodData={todayFoodData}
               exerciseData={todayExerciseData}
+              dailyCalories={dailyCalories} // 프롭스로 전달
             />
           </DailyAchievementBlock>
         </>

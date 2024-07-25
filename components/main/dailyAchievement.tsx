@@ -199,6 +199,7 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
   return (
     <AchievementWrapper>
       <h2>오늘의 달성률</h2>
+
       <Doughnut
         data={data}
         options={options}

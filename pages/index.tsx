@@ -8,7 +8,7 @@ import styled from "styled-components";
 import CalendarTab from "../components/main/calendarTab";
 import TodayFoodList from "../components/main/todayFoodList";
 import TodayExerciseList from "../components/main/todayExerciseList";
-import DailyAchievement from "../components/main/dailyAchievement";
+// import DailyAchievement from "../components/main/dailyAchievement";
 import CalorieBar from "../components/main/calorieBar";
 
 dayjs.extend(weekOfYear);
@@ -220,7 +220,7 @@ const Home = () => {
               <TodayExerciseList exerciseData={todayExerciseData} />
             )}
           </ListBlock>
-          <DailyAchievementBlock>
+          {/* <DailyAchievementBlock>
             <DailyAchievement
               userId={currentUser.user_id}
               selectedDate={selectedDate}
@@ -228,7 +228,7 @@ const Home = () => {
               exerciseData={todayExerciseData}
               dailyCalories={dailyCalories} // 프롭스로 전달
             />
-          </DailyAchievementBlock>
+          </DailyAchievementBlock> */}
         </>
       )}
       {currentTab === "month" && <></>}

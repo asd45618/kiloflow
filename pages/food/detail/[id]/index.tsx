@@ -1,5 +1,5 @@
+// pages/food/detail/[id]/index.tsx
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import styles from "./foodDetail.module.css";
 import {
   faSquarePlus,
   faThumbsDown,
@@ -10,6 +10,7 @@ import { useRouter } from "next/router";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
+import useAchievement from "../../../../components/main/useAchievementHook";
 
 const FoodDetailWrapper = styled.div`
   text-align: center;
@@ -93,12 +94,6 @@ const FoodDetailWrapper = styled.div`
       margin: 30px;
     }
   }
-  .detail__plus {
-    svg {
-      font-size: 30px;
-      cursor: pointer;
-    }
-  }
   .detail__btn {
     button {
       border: 1px solid #000;
@@ -113,6 +108,15 @@ const FoodDetailWrapper = styled.div`
         border-color: red;
       }
     }
+  }
+`;
+
+const DetailPlusWrapper = styled.div<{ disabled: boolean }>`
+  svg {
+    font-size: 30px;
+    cursor: pointer;
+    color: ${(props) => (props.disabled ? "lightgrey" : "black")};
+    pointer-events: ${(props) => (props.disabled ? "none" : "auto")};
   }
 `;
 
@@ -135,12 +139,24 @@ interface FoodData {
   user_id: number;
 }
 
+interface TodayFood {
+  calorie: number;
+}
+
+interface ExerciseData {
+  calories: number;
+}
+
 export default function FoodDetail() {
   const router = useRouter();
   const [recommend, setRecommend] = useState("");
   const [allRecommend, setAllRecommend] = useState(0);
   const [upRecommend, setUpRecommend] = useState(0);
   const [currentUserRecommend, setCurrentUserRecommend] = useState("");
+  const [foodData, setFoodData] = useState<TodayFood[]>([]);
+  const [exerciseData, setExerciseData] = useState<ExerciseData[]>([]);
+  const [dailyCalories, setDailyCalories] = useState(2000);
+  const [isTodayDataLoaded, setIsTodayDataLoaded] = useState(false);
   const {
     id,
     name,
@@ -153,6 +169,14 @@ export default function FoodDetail() {
     user_id,
   } = JSON.parse(router.query.data as string) as FoodData;
   const [currentUserId, setCurrentUserID] = useState(0);
+
+  // useAchievement 훅을 사용
+  const { achievement, loading, consumedCalories, burnedCalories } =
+    useAchievement({
+      foodData,
+      exerciseData,
+      dailyCalories,
+    });
 
   const clickThumb = async (thumb: string) => {
     try {
@@ -236,6 +260,53 @@ export default function FoodDetail() {
 
       if (res.ok) {
         const rec = await res.json();
+        const newFoodData = [...foodData, { calorie }];
+        setFoodData(newFoodData);
+
+        const newAchievement = achievement;
+        console.log("푸드추가 달성률", achievement, newAchievement);
+
+        try {
+          const res = await fetch(
+            `/api/achievement/get?user_id=${currentUserId}&date=${
+              new Date().toISOString().split("T")[0]
+            }`,
+            {
+              method: "GET",
+            }
+          );
+
+          if (res.ok) {
+            await fetch("/api/achievement/update", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                user_id: currentUserId,
+                date: new Date().toISOString().split("T")[0],
+                achievement: newAchievement,
+              }),
+            });
+            router.back();
+          } else {
+            await fetch("/api/achievement/create", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                user_id: currentUserId,
+                date: new Date().toISOString().split("T")[0],
+                achievement: newAchievement,
+              }),
+            });
+            router.back();
+          }
+        } catch (error) {
+          console.error("Failed to update or create achievement:", error);
+        }
+
         alert(`${name} ${rec.message}`);
       } else {
         alert("추가에 실패했습니다.");
@@ -296,15 +367,63 @@ export default function FoodDetail() {
           if (response.ok) {
             const data = await response.json();
             setCurrentUserID(data.user.user_id);
+            setDailyCalories(data.userProfile.daily_calories);
+            await fetchTodayFoodData(data.user.user_id);
+            await fecthTodayExerciseData(data.user.user_id);
+            setIsTodayDataLoaded(true);
           } else {
             throw new Error("데이터를 불러오는 데 실패했습니다.");
           }
         }
       } catch (error) {
         console.error("API 요청 에러:", error);
-        // 에러 처리 로직 추가
       }
     };
+
+    const fetchTodayFoodData = async (userId: number) => {
+      try {
+        const res = await fetch(
+          `/api/food/todayFood?user_id=${userId}&date=${
+            new Date().toISOString().split("T")[0]
+          }`,
+          {
+            method: "GET",
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          setFoodData(data);
+        } else {
+          alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+        }
+      } catch (err) {
+        alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+      }
+    };
+
+    const fecthTodayExerciseData = async (userId: number) => {
+      try {
+        const res = await fetch(
+          `/api/exercise/todayExercise?user_id=${userId}&date=${
+            new Date().toISOString().split("T")[0]
+          }`,
+          {
+            method: "GET",
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          setExerciseData(data);
+        } else {
+          alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+        }
+      } catch (err) {
+        alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+      }
+    };
+
     fetchData();
   }, []);
 
@@ -365,11 +484,14 @@ export default function FoodDetail() {
           단: {protein} 탄: {carbohydrate} 지: {fat}
         </p>
         <p>열량: {calorie}kcal</p>
-        {/* <p>그 외 정보들</p> */}
       </div>
-      <div className="detail__plus" onClick={addTodayFood}>
+      <DetailPlusWrapper
+        className="detail__plus"
+        onClick={addTodayFood}
+        disabled={!isTodayDataLoaded}
+      >
         <FontAwesomeIcon icon={faSquarePlus} />
-      </div>
+      </DetailPlusWrapper>
       {id.startsWith("user") && user_id === currentUserId ? (
         <div className="detail__btn">
           <button onClick={goToModify}>수정</button>

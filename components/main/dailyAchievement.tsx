@@ -15,6 +15,7 @@ const AchievementWrapper = styled.div`
   width: 100%;
   text-align: center;
   margin-top: 20px;
+  background-color: white; /* 배경 흰색 */
 `;
 
 const MessageWrapper = styled.div`
@@ -84,8 +85,6 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
 
         setBurnedCalories(totalBurnedCalories);
 
-        // let achievementRate = 0;
-
         if (totalConsumedCalories < dailyCalories * 0.45) {
           setAchievement(0);
         } else if (totalConsumedCalories <= dailyCalories) {
@@ -103,8 +102,6 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
             )
           );
         }
-        console.log("ahievement", achievement);
-        // console.log("achievementRate", Math.floor(achievementRate));
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -145,16 +142,15 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
         "섭취 칼로리가 목표를 초과했습니다. 내일은 조금 더 신경써서 적정량을 섭취해보세요."
       );
     }
-    console.log("achievement", achievement);
   }, [achievement, dailyCalories]);
 
   const data = {
     labels: ["달성률"],
     datasets: [
       {
-        data: [achievement],
-        backgroundColor: ["#36A2EB"],
-        hoverBackgroundColor: ["#36A2EB"],
+        data: [achievement, 100 - achievement],
+        backgroundColor: ["#36A2EB", "#FFFFFF"], // 달성률 부분은 파란색, 나머지 부분은 흰색
+        hoverBackgroundColor: ["#36A2EB", "#FFFFFF"],
         borderWidth: 0,
       },
     ],
@@ -199,7 +195,6 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
   return (
     <AchievementWrapper>
       <h2>오늘의 달성률</h2>
-
       <Doughnut
         data={data}
         options={options}

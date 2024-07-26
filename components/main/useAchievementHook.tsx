@@ -48,9 +48,7 @@ const useAchievement = ({
 
     let newAchievement = 0;
 
-    if (totalConsumedCalories < dailyCalories * 0.3) {
-      newAchievement = 0;
-    } else if (totalConsumedCalories <= dailyCalories) {
+    if (totalConsumedCalories <= dailyCalories) {
       newAchievement = Math.floor(
         ((totalConsumedCalories + totalBurnedCalories) / dailyCalories) * 100
       );

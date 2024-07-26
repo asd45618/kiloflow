@@ -23,6 +23,7 @@ model users {
   userFoodList           userFoodList[]
   todayFood              todayFood[]
   todayExercise          todayExercise[]
+  achievement            achievement[]
 
   @@index([user_id])
 }
@@ -166,5 +167,16 @@ model todayExercise {
   user        users         @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@index([user_id])
+}
+
+model achievement {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  date        DateTime
+  achievement Int
+
+  user        users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id, date], name: "user_date_unique")
 }
 

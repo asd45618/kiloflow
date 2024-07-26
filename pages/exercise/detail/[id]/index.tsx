@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import styled from "styled-components";
+import useAchievement from "../../../../components/main/useAchievementHook";
 
 const ExerciseDetailWrapper = styled.div`
   padding: 10px;
@@ -56,14 +57,24 @@ const ExerciseDetailWrapper = styled.div`
     span {
     }
   }
-  .detail__plus {
-    margin-top: 40px;
-    svg {
-      font-size: 30px;
-      cursor: pointer;
-    }
+`;
+
+const DetailPlusWrapper = styled.div<{ disabled: boolean }>`
+  svg {
+    font-size: 30px;
+    cursor: pointer;
+    color: ${(props) => (props.disabled ? "lightgrey" : "black")};
+    pointer-events: ${(props) => (props.disabled ? "none" : "auto")};
   }
 `;
+
+interface TodayFood {
+  calorie: number;
+}
+
+interface ExerciseData {
+  calories: number;
+}
 
 export default function ExerciseDetail() {
   const router = useRouter();
@@ -72,6 +83,18 @@ export default function ExerciseDetail() {
   const [userName, setUserName] = useState("");
   const [userWeight, setUserWeight] = useState(0);
   const [currentUserID, setCurrentUserID] = useState("");
+  const [foodData, setFoodData] = useState<TodayFood[]>([]);
+  const [exerciseData, setExerciseData] = useState<ExerciseData[]>([]);
+  const [dailyCalories, setDailyCalories] = useState(2000);
+  const [isTodayDataLoaded, setIsTodayDataLoaded] = useState(false);
+
+  // useAchievement 훅을 사용
+  const { achievement, loading, consumedCalories, burnedCalories } =
+    useAchievement({
+      foodData,
+      exerciseData,
+      dailyCalories,
+    });
 
   const changeMin = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMin(parseInt(e.target.value));
@@ -95,6 +118,51 @@ export default function ExerciseDetail() {
 
       if (res.ok) {
         const rec = await res.json();
+        const newExerciseData = [...exerciseData, { calories }];
+        setExerciseData(newExerciseData);
+
+        const newAchievement = achievement;
+        try {
+          const res = await fetch(
+            `/api/achievement/get?user_id=${currentUserID}&date=${
+              new Date().toISOString().split("T")[0]
+            }`,
+            {
+              method: "GET",
+            }
+          );
+
+          if (res.ok) {
+            await fetch("/api/achievement/update", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                user_id: currentUserID,
+                date: new Date().toISOString().split("T")[0],
+                achievement: newAchievement,
+              }),
+            });
+            router.back();
+          } else {
+            await fetch("/api/achievement/create", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                user_id: currentUserID,
+                date: new Date().toISOString().split("T")[0],
+                achievement: newAchievement,
+              }),
+            });
+            router.back();
+          }
+        } catch (error) {
+          console.error("Failed to update or create achievement:", error);
+        }
+
         alert(`${name} ${rec.message}`);
         router.back();
       } else {
@@ -120,6 +188,10 @@ export default function ExerciseDetail() {
             setUserName(data.user.nickname);
             setUserWeight(data.userProfile.weight);
             setCurrentUserID(data.user.user_id);
+            setDailyCalories(data.userProfile.daily_calories);
+            await fetchTodayFoodData(data.user.user_id);
+            await fecthTodayExerciseData(data.user.user_id);
+            setIsTodayDataLoaded(true);
           } else {
             throw new Error("데이터를 불러오는 데 실패했습니다.");
           }
@@ -128,6 +200,51 @@ export default function ExerciseDetail() {
         console.error("API 요청 에러:", error);
       }
     };
+
+    const fetchTodayFoodData = async (userId: number) => {
+      try {
+        const res = await fetch(
+          `/api/food/todayFood?user_id=${userId}&date=${
+            new Date().toISOString().split("T")[0]
+          }`,
+          {
+            method: "GET",
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          setFoodData(data);
+        } else {
+          alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+        }
+      } catch (err) {
+        alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+      }
+    };
+
+    const fecthTodayExerciseData = async (userId: number) => {
+      try {
+        const res = await fetch(
+          `/api/exercise/todayExercise?user_id=${userId}&date=${
+            new Date().toISOString().split("T")[0]
+          }`,
+          {
+            method: "GET",
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          setExerciseData(data);
+        } else {
+          alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+        }
+      } catch (err) {
+        alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+      }
+    };
+
     fetchData();
   }, []);
 
@@ -148,9 +265,13 @@ export default function ExerciseDetail() {
           kcal 소모 가능합니다.
         </span>
       </div>
-      <div className="detail__plus" onClick={addTodayExercise}>
+      <DetailPlusWrapper
+        className="detail__plus"
+        onClick={addTodayExercise}
+        disabled={!isTodayDataLoaded}
+      >
         <FontAwesomeIcon icon={faSquarePlus} />
-      </div>
+      </DetailPlusWrapper>
     </ExerciseDetailWrapper>
   );
 }

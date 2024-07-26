@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import styled from "styled-components";
+import useAchievement from "../main/useAchievementHook";
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
   Legend,
   Plugin,
+  Chart,
 } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -46,45 +48,43 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
   exerciseData,
   dailyCalories,
 }) => {
-  const [consumedCalories, setConsumedCalories] = useState(0);
-  const [burnedCalories, setBurnedCalories] = useState(0);
-  const [achievement, setAchievement] = useState(0);
+  const { achievement, loading, consumedCalories, burnedCalories } =
+    useAchievement({
+      foodData,
+      exerciseData,
+      dailyCalories,
+    }); // 훅 사용
+
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState({
+    labels: ["달성률"],
+    datasets: [
+      {
+        data: [0, 100],
+        backgroundColor: ["#36A2EB", "#FFFFFF"],
+        hoverBackgroundColor: ["#36A2EB", "#FFFFFF"],
+        borderWidth: 0,
+      },
+    ],
+  });
+  const [centerText, setCenterText] = useState("0%");
 
   useEffect(() => {
-    const totalConsumedCalories = foodData.reduce(
-      (total: number, food: any) => total + Number(food.calorie),
-      0
-    );
-
-    setConsumedCalories(totalConsumedCalories);
-
-    const totalBurnedCalories = exerciseData.reduce(
-      (total: number, exercise: any) => total + exercise.calories,
-      0
-    );
-
-    setBurnedCalories(totalBurnedCalories);
-
-    if (totalConsumedCalories < dailyCalories * 0.45) {
-      setAchievement(0);
-    } else if (totalConsumedCalories <= dailyCalories) {
-      setAchievement(
-        Math.floor(
-          ((totalConsumedCalories + totalBurnedCalories) / dailyCalories) * 100
-        )
-      );
-    } else {
-      setAchievement(
-        Math.floor(
-          ((dailyCalories - totalBurnedCalories) / totalConsumedCalories) * 100
-        )
-      );
+    if (!loading) {
+      setChartData({
+        labels: ["달성률"],
+        datasets: [
+          {
+            data: [achievement, 100 - achievement],
+            backgroundColor: ["#36A2EB", "#FFFFFF"],
+            hoverBackgroundColor: ["#36A2EB", "#FFFFFF"],
+            borderWidth: 0,
+          },
+        ],
+      });
+      setCenterText(`${achievement}%`);
     }
-
-    setLoading(false);
-  }, [dailyCalories, foodData, exerciseData]);
+  }, [achievement, loading]);
 
   useEffect(() => {
     if (consumedCalories < dailyCalories * 0.45) {
@@ -118,18 +118,6 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
     }
   }, [achievement, dailyCalories]);
 
-  const data = {
-    labels: ["달성률"],
-    datasets: [
-      {
-        data: [achievement, 100 - achievement],
-        backgroundColor: ["#36A2EB", "#FFFFFF"], // 달성률 부분은 파란색, 나머지 부분은 흰색
-        hoverBackgroundColor: ["#36A2EB", "#FFFFFF"],
-        borderWidth: 0,
-      },
-    ],
-  };
-
   const options = {
     cutout: "70%",
     plugins: {
@@ -142,10 +130,10 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
     },
   };
 
-  const createCenterTextPlugin = (text: string): Plugin<"doughnut"> => {
+  const createCenterTextPlugin = (): Plugin<"doughnut"> => {
     return {
       id: "centerText",
-      beforeDraw: (chart) => {
+      beforeDraw: (chart: Chart<"doughnut">) => {
         const { ctx, width, height } = chart;
         ctx.restore();
         const fontSize = (height / 114).toFixed(2);
@@ -153,6 +141,7 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
         ctx.textBaseline = "middle";
         ctx.fillStyle = "#36A2EB";
 
+        const text = centerText;
         const textX = Math.round((width - ctx.measureText(text).width) / 2);
         const textY = height / 2;
 
@@ -169,12 +158,10 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
   return (
     <AchievementWrapper>
       <h2>오늘의 달성률</h2>
-
-      <p>{achievement}</p>
       <Doughnut
-        data={data}
+        data={chartData}
         options={options}
-        plugins={[createCenterTextPlugin(`${achievement}%`)]}
+        plugins={[createCenterTextPlugin()]}
       />
       <MessageWrapper>{message}</MessageWrapper>
     </AchievementWrapper>

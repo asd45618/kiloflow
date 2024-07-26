@@ -8,8 +8,9 @@ import styled from "styled-components";
 import CalendarTab from "../components/main/calendarTab";
 import TodayFoodList from "../components/main/todayFoodList";
 import TodayExerciseList from "../components/main/todayExerciseList";
-// import DailyAchievement from "../components/main/dailyAchievement";
+import DailyAchievement from "../components/main/dailyAchievement";
 import CalorieBar from "../components/main/calorieBar";
+import AchievementLineChart from "../components/main/achievementLineChart";
 
 dayjs.extend(weekOfYear);
 
@@ -57,6 +58,8 @@ const ToggleButton = styled.button<{ active: boolean }>`
 
 const DailyAchievementBlock = styled.div``;
 
+const AchievementLineChartBlock = styled.div``;
+
 type User = {
   user_id: number;
   nickname: string;
@@ -70,11 +73,15 @@ type Tab = "week" | "month";
 const Home = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentTab, setCurrentTab] = useState<Tab>("week");
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(dayjs().toDate());
   const [todayList, setTodayList] = useState("food");
   const [todayFoodData, setTodayFoodData] = useState([]);
   const [todayExerciseData, setTodayExerciseData] = useState([]);
   const [dailyCalories, setDailyCalories] = useState(2000);
+  const [monthlyAchievements, setMonthlyAchievements] = useState<{
+    [key: string]: number;
+  }>({});
+  const [achievement, setAchievement] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -107,9 +114,9 @@ const Home = () => {
     if (currentUser) {
       const fetchTodayData = async () => {
         const foodRes = await fetch(
-          `/api/food/todayFood?user_id=${
-            currentUser.user_id
-          }&date=${selectedDate.toISOString()}`
+          `/api/food/todayFood?user_id=${currentUser.user_id}&date=${dayjs(
+            selectedDate
+          ).format("YYYY-MM-DD")}`
         );
         const foodData = await foodRes.json();
         setTodayFoodData(foodData);
@@ -117,18 +124,62 @@ const Home = () => {
         const exerciseRes = await fetch(
           `/api/exercise/todayExercise?user_id=${
             currentUser.user_id
-          }&date=${selectedDate.toISOString()}`
+          }&date=${dayjs(selectedDate).format("YYYY-MM-DD")}`
         );
         const exerciseData = await exerciseRes.json();
         setTodayExerciseData(exerciseData);
       };
 
+      const fetchAchievement = async () => {
+        const res = await fetch(
+          `/api/achievement/get?user_id=${currentUser.user_id}&date=${dayjs(
+            selectedDate
+          ).format("YYYY-MM-DD")}`
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          setAchievement(data.achievement);
+        } else {
+          setAchievement(0);
+        }
+      };
+
       fetchTodayData();
+      fetchAchievement();
     }
   }, [currentUser, selectedDate]);
 
+  useEffect(() => {
+    if (currentUser && currentTab === "month") {
+      const fetchMonthlyAchievements = async () => {
+        const fetchAchievementsForMonth = async (date: dayjs.Dayjs) => {
+          const res = await fetch(
+            `/api/achievement/getMonthly?user_id=${
+              currentUser.user_id
+            }&month=${date.format("YYYY-MM")}`
+          );
+          return res.json();
+        };
+
+        let achievements: { [key: string]: number } = {};
+        for (let i = 0; i < 5; i++) {
+          const date = dayjs(selectedDate).subtract(i, "month");
+          const data = await fetchAchievementsForMonth(date);
+          data.forEach((achievement: { date: string; achievement: number }) => {
+            achievements[dayjs(achievement.date).format("YYYY-MM-DD")] =
+              achievement.achievement;
+          });
+        }
+        setMonthlyAchievements(achievements);
+      };
+
+      fetchMonthlyAchievements();
+    }
+  }, [currentUser, selectedDate, currentTab]);
+
   const handleDateChange = (value: Date) => {
-    setSelectedDate(value);
+    setSelectedDate(dayjs(value).toDate());
   };
 
   const tileClassName = ({ date }: { date: Date }) => {
@@ -138,6 +189,36 @@ const Home = () => {
       if (date < startOfWeek || date > endOfWeek) {
         return "react-calendar__tile--hidden";
       }
+    }
+    return null;
+  };
+
+  const tileContent = ({ date }: { date: Date }) => {
+    const dateString = dayjs(date).format("YYYY-MM-DD");
+    const achievement = monthlyAchievements[dateString];
+
+    if (achievement !== undefined) {
+      let color = "";
+      if (achievement <= 30) {
+        color = "red";
+      } else if (achievement <= 60) {
+        color = "yellow";
+      } else if (achievement <= 90) {
+        color = "blue";
+      } else {
+        color = "green";
+      }
+      return (
+        <div
+          style={{
+            backgroundColor: color,
+            borderRadius: "50%",
+            width: "20px",
+            height: "20px",
+            margin: "auto",
+          }}
+        ></div>
+      );
     }
     return null;
   };
@@ -182,17 +263,42 @@ const Home = () => {
         handlePrev={handlePrev}
         handleNext={handleNext}
       />
-      <StyledCalendar
-        key={selectedDate.toString()}
-        onChange={(value) => handleDateChange(value as Date)}
-        value={selectedDate}
-        view="month"
-        tileClassName={tileClassName}
-        formatMonthYear={(locale, date) => formatLabel(date)}
-        formatDay={(locale, date) => dayjs(date).date().toString()}
-      />
+      {currentTab === "month" && (
+        <>
+          <StyledCalendar
+            key={selectedDate.toString()}
+            onChange={(value) => handleDateChange(value as Date)}
+            value={selectedDate}
+            view="month"
+            tileClassName={tileClassName}
+            tileContent={tileContent}
+            formatMonthYear={(locale, date) => formatLabel(date)}
+            formatDay={(locale, date) => dayjs(date).date().toString()}
+            // 달력 일요일부터 시작하게
+            // startOfWeek, endOfWeek가 일요일 기준이라서
+            locale="en-US"
+          />
+          <AchievementLineChartBlock>
+            <AchievementLineChart
+              selectedDate={selectedDate}
+              monthlyAchievements={monthlyAchievements}
+            />
+          </AchievementLineChartBlock>
+        </>
+      )}
       {currentTab === "week" && (
         <>
+          <StyledCalendar
+            key={selectedDate.toString()}
+            onChange={(value) => handleDateChange(value as Date)}
+            value={selectedDate}
+            view="month"
+            tileClassName={tileClassName}
+            formatMonthYear={(locale, date) => formatLabel(date)}
+            formatDay={(locale, date) => dayjs(date).date().toString()}
+            // 달력 일요일부터 시작하게
+            locale="en-US"
+          />
           <CalorieBarBlock>
             <CalorieBar
               foodData={todayFoodData}
@@ -220,18 +326,11 @@ const Home = () => {
               <TodayExerciseList exerciseData={todayExerciseData} />
             )}
           </ListBlock>
-          {/* <DailyAchievementBlock>
-            <DailyAchievement
-              userId={currentUser.user_id}
-              selectedDate={selectedDate}
-              foodData={todayFoodData}
-              exerciseData={todayExerciseData}
-              dailyCalories={dailyCalories} // 프롭스로 전달
-            />
-          </DailyAchievementBlock> */}
+          <DailyAchievementBlock>
+            <DailyAchievement achievement={achievement} />
+          </DailyAchievementBlock>
         </>
       )}
-      {currentTab === "month" && <></>}
     </HomeBlock>
   );
 };

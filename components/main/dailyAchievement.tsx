@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import styled from "styled-components";
-import useAchievement from "../main/useAchievementHook";
+
 import {
   Chart as ChartJS,
   ArcElement,
@@ -25,37 +25,11 @@ const MessageWrapper = styled.div`
   font-size: 18px;
 `;
 
-interface Food {
-  calorie: number;
-}
-
-interface Exercise {
-  calories: number;
-}
-
 interface DailyAchievementProps {
-  userId: number;
-  selectedDate: Date;
-  foodData: Food[];
-  exerciseData: Exercise[];
-  dailyCalories: number;
+  achievement: number;
 }
 
-const DailyAchievement: React.FC<DailyAchievementProps> = ({
-  userId,
-  selectedDate,
-  foodData,
-  exerciseData,
-  dailyCalories,
-}) => {
-  const { achievement, loading, consumedCalories, burnedCalories } =
-    useAchievement({
-      foodData,
-      exerciseData,
-      dailyCalories,
-    }); // 훅 사용
-
-  const [message, setMessage] = useState("");
+const DailyAchievement: React.FC<DailyAchievementProps> = ({ achievement }) => {
   const [chartData, setChartData] = useState({
     labels: ["달성률"],
     datasets: [
@@ -67,56 +41,57 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
       },
     ],
   });
-  const [centerText, setCenterText] = useState("0%");
+  const [centerText, setCenterText] = useState(`${achievement}%`);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (!loading) {
-      setChartData({
-        labels: ["달성률"],
-        datasets: [
-          {
-            data: [achievement, 100 - achievement],
-            backgroundColor: ["#36A2EB", "#FFFFFF"],
-            hoverBackgroundColor: ["#36A2EB", "#FFFFFF"],
-            borderWidth: 0,
-          },
-        ],
-      });
-      setCenterText(`${achievement}%`);
+    if (achievement < 30) {
+      setMessage(
+        "칼로리 섭취가 너무 적습니다. 건강한 식습관과 규칙적인 운동을 함께 유지하세요."
+      );
+    } else if (achievement >= 30 && achievement <= 40) {
+      setMessage("칼로리 섭취와 운동량이 조금 부족합니다. 더 노력해보세요.");
+    } else if (achievement >= 41 && achievement <= 50) {
+      setMessage(
+        "칼로리 섭취와 운동이 조금씩 균형을 잡아가고 있습니다. 계속해보세요."
+      );
+    } else if (achievement >= 51 && achievement <= 60) {
+      setMessage(
+        "칼로리 섭취와 운동이 목표에 가까워지고 있습니다. 아주 잘하고 있어요!"
+      );
+    } else if (achievement >= 61 && achievement <= 70) {
+      setMessage("칼로리 섭취와 운동이 적절합니다. 계속 이 상태를 유지하세요!");
+    } else if (achievement >= 71 && achievement <= 80) {
+      setMessage(
+        "칼로리 섭취와 운동이 매우 좋습니다. 지금처럼 꾸준히 해보세요!"
+      );
+    } else if (achievement >= 81 && achievement <= 90) {
+      setMessage(
+        "칼로리 섭취와 운동이 훌륭합니다. 계속해서 좋은 습관을 이어가세요!"
+      );
+    } else if (achievement >= 91 && achievement <= 99) {
+      setMessage("칼로리 섭취와 운동이 거의 완벽합니다. 조금만 더 힘내세요!");
+    } else if (achievement === 100) {
+      setMessage(
+        "오늘의 칼로리 섭취와 운동 목표를 완벽하게 달성했습니다! 지금처럼 건강한 생활을 지속하세요."
+      );
     }
-  }, [achievement, loading]);
+  }, [achievement]);
 
   useEffect(() => {
-    if (consumedCalories < dailyCalories * 0.45) {
-      setMessage(
-        "섭취한 칼로리 열량이 너무 적습니다. 건강하고 지속가능한 다이어트를 위해 적절한 식이와 운동을 함께 병행하세요."
-      );
-    } else if (consumedCalories <= dailyCalories) {
-      if (achievement >= 31 && achievement <= 40) {
-        setMessage("섭취 칼로리 양이 적절합니다. 조금 더 신경써보세요.");
-      } else if (achievement >= 41 && achievement <= 50) {
-        setMessage("섭취 칼로리 양이 괜찮습니다. 계속 유지하세요.");
-      } else if (achievement >= 51 && achievement <= 60) {
-        setMessage("섭취 칼로리가 목표에 가까워지고 있습니다. 잘하고 있어요!");
-      } else if (achievement >= 61 && achievement <= 70) {
-        setMessage("섭취 칼로리가 적절합니다. 잘하고 있습니다!");
-      } else if (achievement >= 71 && achievement <= 80) {
-        setMessage("섭취 칼로리가 좋습니다. 계속 유지하세요!");
-      } else if (achievement >= 81 && achievement <= 90) {
-        setMessage("섭취 칼로리가 아주 좋습니다. 계속하세요!");
-      } else if (achievement >= 91 && achievement <= 99) {
-        setMessage("섭취 칼로리가 거의 목표에 도달했습니다. 잘하고 있어요!");
-      } else if (achievement === 100) {
-        setMessage(
-          "오늘의 섭취 칼로리 목표를 완벽하게 달성했습니다! 계속해서 건강한 식습관을 유지하세요."
-        );
-      }
-    } else {
-      setMessage(
-        "섭취 칼로리가 목표를 초과했습니다. 내일은 조금 더 신경써서 적정량을 섭취해보세요."
-      );
-    }
-  }, [achievement, dailyCalories]);
+    setChartData({
+      labels: ["달성률"],
+      datasets: [
+        {
+          data: [achievement, 100 - achievement],
+          backgroundColor: ["#36A2EB", "#FFFFFF"],
+          hoverBackgroundColor: ["#36A2EB", "#FFFFFF"],
+          borderWidth: 0,
+        },
+      ],
+    });
+    setCenterText(`${achievement}%`);
+  }, [achievement]);
 
   const options = {
     cutout: "70%",
@@ -151,13 +126,10 @@ const DailyAchievement: React.FC<DailyAchievementProps> = ({
     };
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <AchievementWrapper>
       <h2>오늘의 달성률</h2>
+      <p>{achievement}</p>
       <Doughnut
         data={chartData}
         options={options}

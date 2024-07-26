@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import dayjs from "dayjs";
-import weekOfYear from "dayjs/plugin/weekOfYear";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
-import styled from "styled-components";
-import CalendarTab from "../components/main/calendarTab";
-import TodayFoodList from "../components/main/todayFoodList";
-import TodayExerciseList from "../components/main/todayExerciseList";
-import DailyAchievement from "../components/main/dailyAchievement";
-import CalorieBar from "../components/main/calorieBar";
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import dayjs from 'dayjs';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import styled from 'styled-components';
+import CalendarTab from '../components/main/calendarTab';
+import TodayFoodList from '../components/main/todayFoodList';
+import TodayExerciseList from '../components/main/todayExerciseList';
+import DailyAchievement from '../components/main/dailyAchievement';
+import CalorieBar from '../components/main/calorieBar';
 
 dayjs.extend(weekOfYear);
 
@@ -20,19 +20,30 @@ const HomeBlock = styled.div`
 `;
 
 const StyledCalendar = styled(Calendar)`
+  width: 100%;
+  background-color: inherit;
+  border: none;
+  border-bottom: 1px solid #ccc;
   .react-calendar__navigation {
     display: none;
   }
   .react-calendar__tile--hidden {
     display: none !important;
   }
+  abbr {
+    text-decoration: none;
+  }
 `;
 
-const CalorieBarBlock = styled.div``;
+const CalorieBarBlock = styled.div`
+  width: 100%;
+  background: rgba(5, 193, 11, 0.437);
+  /* border-radius: 5px; */
+`;
 
 const ListBlock = styled.div`
   width: 100%;
-  background-color: #f5f5f5;
+  /* background-color: #f5f5f5; */
   .button__container {
     display: flex;
     justify-content: center;
@@ -41,8 +52,8 @@ const ListBlock = styled.div`
 `;
 
 const ToggleButton = styled.button<{ active: boolean }>`
-  background-color: ${({ active }) => (active ? "#007bff" : "#fff")};
-  color: ${({ active }) => (active ? "#fff" : "#000")};
+  background-color: ${({ active }) => (active ? '#007bff' : '#fff')};
+  color: ${({ active }) => (active ? '#fff' : '#000')};
   border: 1px solid #007bff;
   border-radius: 5px;
   padding: 10px 20px;
@@ -65,13 +76,13 @@ type User = {
   password: string;
 };
 
-type Tab = "week" | "month";
+type Tab = 'week' | 'month';
 
 const Home = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [currentTab, setCurrentTab] = useState<Tab>("week");
+  const [currentTab, setCurrentTab] = useState<Tab>('week');
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [todayList, setTodayList] = useState("food");
+  const [todayList, setTodayList] = useState('food');
   const [todayFoodData, setTodayFoodData] = useState([]);
   const [todayExerciseData, setTodayExerciseData] = useState([]);
   const [dailyCalories, setDailyCalories] = useState(2000);
@@ -79,9 +90,9 @@ const Home = () => {
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       if (token) {
-        const res = await fetch("/api/auth/me", {
+        const res = await fetch('/api/auth/me', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -92,11 +103,11 @@ const Home = () => {
           setCurrentUser(data.user);
           setDailyCalories(data.userProfile.daily_calories); // 권장섭취칼로리 가져옴
         } else {
-          localStorage.removeItem("token");
-          router.push("/auth/login");
+          localStorage.removeItem('token');
+          router.push('/auth/login');
         }
       } else {
-        router.push("/auth/login");
+        router.push('/auth/login');
       }
     };
 
@@ -112,6 +123,7 @@ const Home = () => {
           }&date=${selectedDate.toISOString()}`
         );
         const foodData = await foodRes.json();
+        console.log(foodData);
         setTodayFoodData(foodData);
 
         const exerciseRes = await fetch(
@@ -132,11 +144,11 @@ const Home = () => {
   };
 
   const tileClassName = ({ date }: { date: Date }) => {
-    if (currentTab === "week") {
-      const startOfWeek = dayjs(selectedDate).startOf("week").toDate();
-      const endOfWeek = dayjs(selectedDate).endOf("week").toDate();
+    if (currentTab === 'week') {
+      const startOfWeek = dayjs(selectedDate).startOf('week').toDate();
+      const endOfWeek = dayjs(selectedDate).endOf('week').toDate();
       if (date < startOfWeek || date > endOfWeek) {
-        return "react-calendar__tile--hidden";
+        return 'react-calendar__tile--hidden';
       }
     }
     return null;
@@ -144,23 +156,23 @@ const Home = () => {
 
   const handlePrev = () => {
     const newDate =
-      currentTab === "week"
-        ? dayjs(selectedDate).subtract(1, "week").toDate()
-        : dayjs(selectedDate).subtract(1, "month").toDate();
+      currentTab === 'week'
+        ? dayjs(selectedDate).subtract(1, 'week').toDate()
+        : dayjs(selectedDate).subtract(1, 'month').toDate();
     setSelectedDate(newDate);
   };
 
   const handleNext = () => {
     const newDate =
-      currentTab === "week"
-        ? dayjs(selectedDate).add(1, "week").toDate()
-        : dayjs(selectedDate).add(1, "month").toDate();
+      currentTab === 'week'
+        ? dayjs(selectedDate).add(1, 'week').toDate()
+        : dayjs(selectedDate).add(1, 'month').toDate();
     setSelectedDate(newDate);
   };
 
   const formatLabel = (date: Date) => {
-    if (currentTab === "week") {
-      const startOfWeek = dayjs(date).startOf("week");
+    if (currentTab === 'week') {
+      const startOfWeek = dayjs(date).startOf('week');
       const weekNumber = Math.ceil(startOfWeek.date() / 7);
       return `${startOfWeek.year()}년 ${
         startOfWeek.month() + 1
@@ -186,12 +198,12 @@ const Home = () => {
         key={selectedDate.toString()}
         onChange={(value) => handleDateChange(value as Date)}
         value={selectedDate}
-        view="month"
+        view='month'
         tileClassName={tileClassName}
         formatMonthYear={(locale, date) => formatLabel(date)}
         formatDay={(locale, date) => dayjs(date).date().toString()}
       />
-      {currentTab === "week" && (
+      {currentTab === 'week' && (
         <>
           <CalorieBarBlock>
             <CalorieBar
@@ -201,23 +213,31 @@ const Home = () => {
             />
           </CalorieBarBlock>
           <ListBlock>
-            <div className="button__container">
+            <div className='button__container'>
               <ToggleButton
-                active={todayList === "food"}
-                onClick={() => setTodayList("food")}
+                active={todayList === 'food'}
+                onClick={() => setTodayList('food')}
               >
                 오늘의 식단
               </ToggleButton>
               <ToggleButton
-                active={todayList === "exercise"}
-                onClick={() => setTodayList("exercise")}
+                active={todayList === 'exercise'}
+                onClick={() => setTodayList('exercise')}
               >
                 오늘의 운동
               </ToggleButton>
             </div>
-            {todayList === "food" && <TodayFoodList foodData={todayFoodData} />}
-            {todayList === "exercise" && (
-              <TodayExerciseList exerciseData={todayExerciseData} />
+            {todayList === 'food' && (
+              <TodayFoodList
+                foodData={todayFoodData}
+                currentUser={currentUser.user_id}
+              />
+            )}
+            {todayList === 'exercise' && (
+              <TodayExerciseList
+                exerciseData={todayExerciseData}
+                currentUser={currentUser.user_id}
+              />
             )}
           </ListBlock>
           <DailyAchievementBlock>
@@ -231,7 +251,7 @@ const Home = () => {
           </DailyAchievementBlock>
         </>
       )}
-      {currentTab === "month" && <></>}
+      {currentTab === 'month' && <></>}
     </HomeBlock>
   );
 };

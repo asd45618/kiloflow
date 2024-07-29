@@ -1,16 +1,16 @@
 // pages/food/detail/[id]/index.tsx
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSquarePlus,
   faThumbsDown,
   faThumbsUp,
-} from "@fortawesome/free-regular-svg-icons";
-import styled from "styled-components";
-import { useRouter } from "next/router";
-import ProgressBar from "react-bootstrap/ProgressBar";
-import { useEffect, useState } from "react";
-import { IoIosArrowBack } from "react-icons/io";
-import useAchievement from "../../../../components/main/useAchievementHook";
+} from '@fortawesome/free-regular-svg-icons';
+import styled from 'styled-components';
+import { useRouter } from 'next/router';
+import ProgressBar from 'react-bootstrap/ProgressBar';
+import { useEffect, useState } from 'react';
+import { IoIosArrowBack } from 'react-icons/io';
+import useAchievement from '../../../../components/main/useAchievementHook';
 
 const FoodDetailWrapper = styled.div`
   text-align: center;
@@ -115,8 +115,8 @@ const DetailPlusWrapper = styled.div<{ disabled: boolean }>`
   svg {
     font-size: 30px;
     cursor: pointer;
-    color: ${(props) => (props.disabled ? "lightgrey" : "black")};
-    pointer-events: ${(props) => (props.disabled ? "none" : "auto")};
+    color: ${(props) => (props.disabled ? 'lightgrey' : 'black')};
+    pointer-events: ${(props) => (props.disabled ? 'none' : 'auto')};
   }
 `;
 
@@ -149,10 +149,10 @@ interface ExerciseData {
 
 export default function FoodDetail() {
   const router = useRouter();
-  const [recommend, setRecommend] = useState("");
+  const [recommend, setRecommend] = useState('');
   const [allRecommend, setAllRecommend] = useState(0);
   const [upRecommend, setUpRecommend] = useState(0);
-  const [currentUserRecommend, setCurrentUserRecommend] = useState("");
+  const [currentUserRecommend, setCurrentUserRecommend] = useState('');
   const [foodData, setFoodData] = useState<TodayFood[]>([]);
   const [exerciseData, setExerciseData] = useState<ExerciseData[]>([]);
   const [dailyCalories, setDailyCalories] = useState(2000);
@@ -180,10 +180,10 @@ export default function FoodDetail() {
 
   const clickThumb = async (thumb: string) => {
     try {
-      const res = await fetch("/api/food/recommend-click", {
-        method: "POST",
+      const res = await fetch('/api/food/recommend-click', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           thumb,
@@ -197,10 +197,10 @@ export default function FoodDetail() {
         setRecommend(rec.message);
         router.back();
       } else {
-        alert("추천에 실패했습니다.");
+        alert('추천에 실패했습니다.');
       }
     } catch (err) {
-      alert("추천에 실패했습니다.");
+      alert('추천에 실패했습니다.');
     }
   };
 
@@ -222,35 +222,35 @@ export default function FoodDetail() {
   };
 
   const deleteFood = async () => {
-    const result = confirm("정말 삭제하시겠습니까?");
+    const result = confirm('정말 삭제하시겠습니까?');
     if (result) {
       try {
-        const res = await fetch("/api/food/delete", {
-          method: "POST",
+        const res = await fetch('/api/food/delete', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({ id, user_id }),
         });
 
         if (res.ok) {
-          alert("삭제가 완료되었습니다.");
-          router.push("/food/list");
+          alert('삭제가 완료되었습니다.');
+          router.push('/food/list');
         } else {
-          alert("삭제에 실패했습니다.");
+          alert('삭제에 실패했습니다.');
         }
       } catch (err) {
-        alert("An unexpected error occurred");
+        alert('An unexpected error occurred');
       }
     }
   };
 
   const addTodayFood = async () => {
     try {
-      const res = await fetch("/api/food/todayFood", {
-        method: "POST",
+      const res = await fetch('/api/food/todayFood', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           user_id: currentUserId,
@@ -264,65 +264,71 @@ export default function FoodDetail() {
         setFoodData(newFoodData);
 
         const newAchievement = achievement;
-        console.log("푸드추가 달성률", achievement, newAchievement);
+        console.log('푸드추가 달성률', achievement, newAchievement);
+        const today = new Date();
+        const isoDate = new Date(
+          Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())
+        )
+          .toISOString()
+          .split('T')[0];
+
+        console.log(isoDate);
 
         try {
           const res = await fetch(
-            `/api/achievement/get?user_id=${currentUserId}&date=${
-              new Date().toISOString().split("T")[0]
-            }`,
+            `/api/achievement/get?user_id=${currentUserId}&date=${isoDate}`,
             {
-              method: "GET",
+              method: 'GET',
             }
           );
 
           if (res.ok) {
-            await fetch("/api/achievement/update", {
-              method: "POST",
+            await fetch('/api/achievement/update', {
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
               body: JSON.stringify({
                 user_id: currentUserId,
-                date: new Date().toISOString().split("T")[0],
+                date: isoDate,
                 achievement: newAchievement,
               }),
             });
             router.back();
           } else {
-            await fetch("/api/achievement/create", {
-              method: "POST",
+            await fetch('/api/achievement/create', {
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
               body: JSON.stringify({
                 user_id: currentUserId,
-                date: new Date().toISOString().split("T")[0],
+                date: isoDate,
                 achievement: newAchievement,
               }),
             });
             router.back();
           }
         } catch (error) {
-          console.error("Failed to update or create achievement:", error);
+          console.error('Failed to update or create achievement:', error);
         }
 
         alert(`${name} ${rec.message}`);
       } else {
-        alert("추가에 실패했습니다.");
+        alert('추가에 실패했습니다.');
       }
     } catch (err) {
-      alert("추가에 실패했습니다.");
+      alert('추가에 실패했습니다.');
     }
   };
 
   useEffect(() => {
     const fetchRecommendList = async () => {
       try {
-        const res = await fetch("/api/food/recommend-list", {
-          method: "POST",
+        const res = await fetch('/api/food/recommend-list', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({ id }),
         });
@@ -335,21 +341,21 @@ export default function FoodDetail() {
           );
           currentUserRecommendData
             ? setCurrentUserRecommend(currentUserRecommendData.recommend)
-            : setCurrentUserRecommend("");
+            : setCurrentUserRecommend('');
           setUpRecommend(
-            data.data.filter((val: Recommendation) => val.recommend === "up")
+            data.data.filter((val: Recommendation) => val.recommend === 'up')
               .length
           );
           setAllRecommend(data.data.length);
         } else {
-          alert("추천 목록을 불러오는 데 실패했습니다1.");
+          alert('추천 목록을 불러오는 데 실패했습니다1.');
         }
       } catch (err) {
         console.log(err);
       }
     };
 
-    if (id.startsWith("user")) {
+    if (id.startsWith('user')) {
       fetchRecommendList();
     }
   }, [id, currentUserId, recommend]);
@@ -357,9 +363,9 @@ export default function FoodDetail() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem('token');
         if (token) {
-          const response = await fetch("/api/auth/me", {
+          const response = await fetch('/api/auth/me', {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -372,22 +378,27 @@ export default function FoodDetail() {
             await fecthTodayExerciseData(data.user.user_id);
             setIsTodayDataLoaded(true);
           } else {
-            throw new Error("데이터를 불러오는 데 실패했습니다.");
+            throw new Error('데이터를 불러오는 데 실패했습니다.');
           }
         }
       } catch (error) {
-        console.error("API 요청 에러:", error);
+        console.error('API 요청 에러:', error);
       }
     };
 
     const fetchTodayFoodData = async (userId: number) => {
+      const today = new Date();
+      const isoDate = new Date(
+        Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())
+      )
+        .toISOString()
+        .split('T')[0];
+
       try {
         const res = await fetch(
-          `/api/food/todayFood?user_id=${userId}&date=${
-            new Date().toISOString().split("T")[0]
-          }`,
+          `/api/food/todayFood?user_id=${userId}&date=${isoDate}`,
           {
-            method: "GET",
+            method: 'GET',
           }
         );
 
@@ -395,21 +406,26 @@ export default function FoodDetail() {
           const data = await res.json();
           setFoodData(data);
         } else {
-          alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+          alert('오늘의 음식 데이터를 불러오는 데 실패했습니다.');
         }
       } catch (err) {
-        alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+        alert('오늘의 음식 데이터를 불러오는 데 실패했습니다.');
       }
     };
 
     const fecthTodayExerciseData = async (userId: number) => {
+      const today = new Date();
+      const isoDate = new Date(
+        Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())
+      )
+        .toISOString()
+        .split('T')[0];
+
       try {
         const res = await fetch(
-          `/api/exercise/todayExercise?user_id=${userId}&date=${
-            new Date().toISOString().split("T")[0]
-          }`,
+          `/api/exercise/todayExercise?user_id=${userId}&date=${isoDate}`,
           {
-            method: "GET",
+            method: 'GET',
           }
         );
 
@@ -417,10 +433,10 @@ export default function FoodDetail() {
           const data = await res.json();
           setExerciseData(data);
         } else {
-          alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+          alert('오늘의 음식 데이터를 불러오는 데 실패했습니다.');
         }
       } catch (err) {
-        alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+        alert('오늘의 음식 데이터를 불러오는 데 실패했습니다.');
       }
     };
 
@@ -431,43 +447,43 @@ export default function FoodDetail() {
     allRecommend > 0 ? Math.round((upRecommend / allRecommend) * 100) : 0;
 
   return (
-    <FoodDetailWrapper className="detail__wrapper">
-      <div className="detail__top">
-        {id.startsWith("user") ? <p>유저등록</p> : ""}
+    <FoodDetailWrapper className='detail__wrapper'>
+      <div className='detail__top'>
+        {id.startsWith('user') ? <p>유저등록</p> : ''}
         <h2>{name}</h2>
-        <div className="back" onClick={() => router.back()}>
+        <div className='back' onClick={() => router.back()}>
           <IoIosArrowBack />
         </div>
       </div>
-      <div className="detail__img">
+      <div className='detail__img'>
         <img src={`${img}`} alt={name} />
       </div>
-      <div className="thumb__wrapper">
-        {id.startsWith("user") ? (
-          <div className="thumb">
+      <div className='thumb__wrapper'>
+        {id.startsWith('user') ? (
+          <div className='thumb'>
             <FontAwesomeIcon
               icon={faThumbsUp}
-              onClick={() => clickThumb("up")}
-              className={currentUserRecommend === "up" ? "up" : ""}
+              onClick={() => clickThumb('up')}
+              className={currentUserRecommend === 'up' ? 'up' : ''}
             />
             <FontAwesomeIcon
               icon={faThumbsDown}
-              onClick={() => clickThumb("down")}
-              className={currentUserRecommend === "down" ? "down" : ""}
+              onClick={() => clickThumb('down')}
+              className={currentUserRecommend === 'down' ? 'down' : ''}
             />
           </div>
         ) : (
-          ""
+          ''
         )}
-        {id.startsWith("user") ? <ProgressBar now={percentage} /> : ""}
-        {id.startsWith("user") ? (
+        {id.startsWith('user') ? <ProgressBar now={percentage} /> : ''}
+        {id.startsWith('user') ? (
           <div>
             {upRecommend >= allRecommend - upRecommend ? (
-              <p className="left">
+              <p className='left'>
                 {percentage}%의 유저가 {name}을 추천해요!
               </p>
             ) : (
-              <p className="right">
+              <p className='right'>
                 {Math.round(
                   ((allRecommend - upRecommend) / allRecommend) * 100
                 )}
@@ -476,29 +492,29 @@ export default function FoodDetail() {
             )}
           </div>
         ) : (
-          ""
+          ''
         )}
       </div>
-      <div className="detail__info">
+      <div className='detail__info'>
         <p>
           단: {protein} 탄: {carbohydrate} 지: {fat}
         </p>
         <p>열량: {calorie}kcal</p>
       </div>
       <DetailPlusWrapper
-        className="detail__plus"
+        className='detail__plus'
         onClick={addTodayFood}
         disabled={!isTodayDataLoaded}
       >
         <FontAwesomeIcon icon={faSquarePlus} />
       </DetailPlusWrapper>
-      {id.startsWith("user") && user_id === currentUserId ? (
-        <div className="detail__btn">
+      {id.startsWith('user') && user_id === currentUserId ? (
+        <div className='detail__btn'>
           <button onClick={goToModify}>수정</button>
           <button onClick={deleteFood}>삭제</button>
         </div>
       ) : (
-        ""
+        ''
       )}
     </FoodDetailWrapper>
   );

@@ -1,5 +1,5 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { PrismaClient } from "@prisma/client";
+import { NextApiRequest, NextApiResponse } from 'next';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -7,8 +7,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "GET") {
+  if (req.method === 'GET') {
     const { user_id, date } = req.query;
+
+    console.log('user_id', user_id, date);
 
     const startOfDay = new Date(date as string);
     startOfDay.setUTCHours(0, 0, 0, 0);
@@ -28,15 +30,15 @@ export default async function handler(
       });
 
       if (!achievement) {
-        return res.status(404).json({ error: "Achievement not found" });
+        return res.status(404).json({ error: 'Achievement not found' });
       }
 
       res.status(200).json(achievement);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Failed to get achievement" });
+      res.status(500).json({ error: 'Failed to get achievement' });
     }
   } else {
-    res.status(405).json({ error: "Method not allowed" });
+    res.status(405).json({ error: 'Method not allowed' });
   }
 }

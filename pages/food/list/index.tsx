@@ -30,23 +30,21 @@ const FoodListWrapper = styled.div`
 
     li {
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       padding: 20px 0;
       border-bottom: 1px solid #b8b8b8;
       .list__wrapper {
-        flex: 0 0 80%;
+        width: 100%;
         a {
           display: flex;
           justify-content: space-between;
           text-decoration: none;
           color: black;
           .list__img {
-            flex: 0 0 30%;
-            width: 90px;
-            height: 90px;
-            margin: auto 0;
+            flex: 0 0 25%;
+            margin: auto 10px;
             img {
               width: inherit;
               height: inherit;
@@ -103,30 +101,6 @@ const FoodList: React.FC = () => {
   const search = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchList(foodList.filter((food) => food.name.includes(keyWord)));
-  };
-
-  const addTodayFood = async (food: FoodItem) => {
-    try {
-      const res = await fetch('/api/food/todayFood', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: currentUserID,
-          food_id: food.id,
-        }),
-      });
-
-      if (res.ok) {
-        const rec = await res.json();
-        alert(`${food.name} ${rec.message}`);
-      } else {
-        alert('추가에 실패했습니다.');
-      }
-    } catch (err) {
-      alert('추가에 실패했습니다.');
-    }
   };
 
   useEffect(() => {
@@ -220,9 +194,6 @@ const FoodList: React.FC = () => {
                     </div>
                   </Link>
                 </div>
-                <div className='detail__btn' onClick={() => addTodayFood(food)}>
-                  <FontAwesomeIcon icon={faSquarePlus} />
-                </div>
               </li>
             ))
           : searchList.map((food) => (
@@ -255,9 +226,6 @@ const FoodList: React.FC = () => {
                       <p>열량: {food.calorie}kcal</p>
                     </div>
                   </Link>
-                </div>
-                <div className='detail__btn' onClick={() => addTodayFood(food)}>
-                  <FontAwesomeIcon icon={faSquarePlus} />
                 </div>
               </li>
             ))}

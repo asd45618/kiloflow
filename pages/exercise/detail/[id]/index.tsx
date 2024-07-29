@@ -1,10 +1,10 @@
-import { faSquarePlus } from "@fortawesome/free-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { IoIosArrowBack } from "react-icons/io";
-import styled from "styled-components";
-import useAchievement from "../../../../components/main/useAchievementHook";
+import { faSquarePlus } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { IoIosArrowBack } from 'react-icons/io';
+import styled from 'styled-components';
+import useAchievement from '../../../../components/main/useAchievementHook';
 
 const ExerciseDetailWrapper = styled.div`
   padding: 10px;
@@ -63,8 +63,8 @@ const DetailPlusWrapper = styled.div<{ disabled: boolean }>`
   svg {
     font-size: 30px;
     cursor: pointer;
-    color: ${(props) => (props.disabled ? "lightgrey" : "black")};
-    pointer-events: ${(props) => (props.disabled ? "none" : "auto")};
+    color: ${(props) => (props.disabled ? 'lightgrey' : 'black')};
+    pointer-events: ${(props) => (props.disabled ? 'none' : 'auto')};
   }
 `;
 
@@ -80,9 +80,9 @@ export default function ExerciseDetail() {
   const router = useRouter();
   const { name, MET, id } = JSON.parse(router.query.data as string);
   const [min, setMin] = useState(0);
-  const [userName, setUserName] = useState("");
+  const [userName, setUserName] = useState('');
   const [userWeight, setUserWeight] = useState(0);
-  const [currentUserID, setCurrentUserID] = useState("");
+  const [currentUserID, setCurrentUserID] = useState('');
   const [foodData, setFoodData] = useState<TodayFood[]>([]);
   const [exerciseData, setExerciseData] = useState<ExerciseData[]>([]);
   const [dailyCalories, setDailyCalories] = useState(2000);
@@ -103,10 +103,10 @@ export default function ExerciseDetail() {
   const addTodayExercise = async () => {
     const calories = (MET * 3.5 * userWeight * min) / 200;
     try {
-      const res = await fetch("/api/exercise/todayExercise", {
-        method: "POST",
+      const res = await fetch('/api/exercise/todayExercise', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           user_id: currentUserID,
@@ -125,60 +125,60 @@ export default function ExerciseDetail() {
         try {
           const res = await fetch(
             `/api/achievement/get?user_id=${currentUserID}&date=${
-              new Date().toISOString().split("T")[0]
+              new Date().toISOString().split('T')[0]
             }`,
             {
-              method: "GET",
+              method: 'GET',
             }
           );
 
           if (res.ok) {
-            await fetch("/api/achievement/update", {
-              method: "POST",
+            await fetch('/api/achievement/update', {
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
               body: JSON.stringify({
                 user_id: currentUserID,
-                date: new Date().toISOString().split("T")[0],
+                date: new Date().toISOString().split('T')[0],
                 achievement: newAchievement,
               }),
             });
             router.back();
           } else {
-            await fetch("/api/achievement/create", {
-              method: "POST",
+            await fetch('/api/achievement/create', {
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
               body: JSON.stringify({
                 user_id: currentUserID,
-                date: new Date().toISOString().split("T")[0],
+                date: new Date().toISOString().split('T')[0],
                 achievement: newAchievement,
               }),
             });
             router.back();
           }
         } catch (error) {
-          console.error("Failed to update or create achievement:", error);
+          console.error('Failed to update or create achievement:', error);
         }
 
         alert(`${name} ${rec.message}`);
         router.back();
       } else {
-        alert("추가에 실패했습니다.");
+        alert('추가에 실패했습니다.');
       }
     } catch (err) {
-      alert("추가에 실패했습니다.");
+      alert('추가에 실패했습니다.');
     }
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem('token');
         if (token) {
-          const response = await fetch("/api/auth/me", {
+          const response = await fetch('/api/auth/me', {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -193,11 +193,11 @@ export default function ExerciseDetail() {
             await fecthTodayExerciseData(data.user.user_id);
             setIsTodayDataLoaded(true);
           } else {
-            throw new Error("데이터를 불러오는 데 실패했습니다.");
+            throw new Error('데이터를 불러오는 데 실패했습니다.');
           }
         }
       } catch (error) {
-        console.error("API 요청 에러:", error);
+        console.error('API 요청 에러:', error);
       }
     };
 
@@ -205,10 +205,10 @@ export default function ExerciseDetail() {
       try {
         const res = await fetch(
           `/api/food/todayFood?user_id=${userId}&date=${
-            new Date().toISOString().split("T")[0]
+            new Date().toISOString().split('T')[0]
           }`,
           {
-            method: "GET",
+            method: 'GET',
           }
         );
 
@@ -216,10 +216,10 @@ export default function ExerciseDetail() {
           const data = await res.json();
           setFoodData(data);
         } else {
-          alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+          alert('오늘의 음식 데이터를 불러오는 데 실패했습니다.');
         }
       } catch (err) {
-        alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+        alert('오늘의 음식 데이터를 불러오는 데 실패했습니다.');
       }
     };
 
@@ -227,10 +227,10 @@ export default function ExerciseDetail() {
       try {
         const res = await fetch(
           `/api/exercise/todayExercise?user_id=${userId}&date=${
-            new Date().toISOString().split("T")[0]
+            new Date().toISOString().split('T')[0]
           }`,
           {
-            method: "GET",
+            method: 'GET',
           }
         );
 
@@ -238,10 +238,10 @@ export default function ExerciseDetail() {
           const data = await res.json();
           setExerciseData(data);
         } else {
-          alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+          alert('오늘의 운동 데이터를 불러오는 데 실패했습니다.');
         }
       } catch (err) {
-        alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+        alert('오늘의 운동 데이터를 불러오는 데 실패했습니다.');
       }
     };
 
@@ -250,23 +250,23 @@ export default function ExerciseDetail() {
 
   return (
     <ExerciseDetailWrapper>
-      <div className="detail_top">
+      <div className='detail_top'>
         <h1>{name}</h1>
 
-        <div className="back" onClick={() => router.back()}>
+        <div className='back' onClick={() => router.back()}>
           <IoIosArrowBack />
         </div>
       </div>
       <p>{userName}님 기준</p>
-      <div className="calculation">
-        <input type="number" onChange={changeMin} value={min} />
+      <div className='calculation'>
+        <input type='number' onChange={changeMin} value={min} />
         <span>
-          분에 약 {min ? Math.round((MET * 3.5 * userWeight * min) / 200) : 0}{" "}
+          분에 약 {min ? Math.round((MET * 3.5 * userWeight * min) / 200) : 0}{' '}
           kcal 소모 가능합니다.
         </span>
       </div>
       <DetailPlusWrapper
-        className="detail__plus"
+        className='detail__plus'
         onClick={addTodayExercise}
         disabled={!isTodayDataLoaded}
       >

@@ -2,6 +2,8 @@ import styled from 'styled-components';
 import dayjs from 'dayjs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSquareMinus } from '@fortawesome/free-regular-svg-icons';
+import { useEffect, useState } from 'react';
+import useAchievement from './useAchievementHook';
 
 const TodayFoodListBlock = styled.div`
   /* padding: 20px; */
@@ -75,10 +77,24 @@ interface TodayFoodListProps {
   currentUser: number;
 }
 
+interface ExerciseData {
+  calories: number;
+}
+
 const TodayFoodList: React.FC<TodayFoodListProps> = ({
   foodData,
   currentUser,
 }) => {
+  const [exerciseData, setExerciseData] = useState<ExerciseData[]>([]);
+  const [dailyCalories, setDailyCalories] = useState(2000);
+
+  const { achievement, loading, consumedCalories, burnedCalories } =
+    useAchievement({
+      foodData,
+      exerciseData,
+      dailyCalories,
+    });
+
   const deleteTodayFood = async (food_id: string) => {
     try {
       const res = await fetch('/api/food/deleteTodayFood', {
@@ -90,8 +106,53 @@ const TodayFoodList: React.FC<TodayFoodListProps> = ({
       });
 
       if (res.ok) {
-        alert('삭제가 완료되었습니다.');
-        // router.push("/food/list");
+        const rec = await res.json();
+        // const newFoodData = [...foodData, { calorie: }];
+        // setFoodData(newFoodData);
+
+        const newAchievement = achievement;
+        console.log('푸드추가 달성률', achievement, newAchievement);
+
+        try {
+          const res = await fetch(
+            `/api/achievement/get?user_id=${currentUser}&date=${
+              new Date().toISOString().split('T')[0]
+            }`,
+            {
+              method: 'GET',
+            }
+          );
+
+          if (res.ok) {
+            await fetch('/api/achievement/update', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                user_id: currentUser,
+                date: new Date().toISOString().split('T')[0],
+                achievement: newAchievement,
+              }),
+            });
+          } else {
+            await fetch('/api/achievement/create', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                user_id: currentUser,
+                date: new Date().toISOString().split('T')[0],
+                achievement: newAchievement,
+              }),
+            });
+          }
+        } catch (error) {
+          console.error('Failed to update or create achievement:', error);
+        }
+
+        alert(`${name} ${rec.message}`);
       } else {
         alert('삭제에 실패했습니다.');
       }
@@ -100,9 +161,79 @@ const TodayFoodList: React.FC<TodayFoodListProps> = ({
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setDailyCalories(data.userProfile.daily_calories);
+            // await fetchTodayFoodData(data.user.user_id);
+            await fecthTodayExerciseData(data.user.user_id);
+          } else {
+            throw new Error('데이터를 불러오는 데 실패했습니다.');
+          }
+        }
+      } catch (error) {
+        console.error('API 요청 에러:', error);
+      }
+    };
+
+    // const fetchTodayFoodData = async (userId: number) => {
+    //   try {
+    //     const res = await fetch(
+    //       `/api/food/todayFood?user_id=${userId}&date=${
+    //         new Date().toISOString().split("T")[0]
+    //       }`,
+    //       {
+    //         method: "GET",
+    //       }
+    //     );
+
+    //     if (res.ok) {
+    //       const data = await res.json();
+    //       setFoodData(data);
+    //     } else {
+    //       alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+    //     }
+    //   } catch (err) {
+    //     alert("오늘의 음식 데이터를 불러오는 데 실패했습니다.");
+    //   }
+    // };
+
+    const fecthTodayExerciseData = async (userId: number) => {
+      try {
+        const res = await fetch(
+          `/api/exercise/todayExercise?user_id=${userId}&date=${
+            new Date().toISOString().split('T')[0]
+          }`,
+          {
+            method: 'GET',
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          setExerciseData(data);
+        } else {
+          alert('오늘의 운동 데이터를 불러오는 데 실패했습니다.');
+        }
+      } catch (err) {
+        alert('오늘의 운동 데이터를 불러오는 데 실패했습니다.');
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <TodayFoodListBlock>
-      {/* <h3>오늘 먹은 음식</h3> */}
       <ul>
         {foodData.map((food) => (
           <li key={food.food_id}>

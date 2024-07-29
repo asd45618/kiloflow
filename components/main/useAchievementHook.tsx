@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 interface Food {
   calorie: number;
@@ -25,9 +25,9 @@ const useAchievement = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("전달받은 foodData", foodData);
-    console.log("전달받은 exerciseDate", exerciseData);
-    console.log("전달받은 dailyCalories", dailyCalories);
+    console.log('전달받은 foodData', foodData);
+    console.log('전달받은 exerciseDate', exerciseData);
+    console.log('전달받은 dailyCalories', dailyCalories);
     const totalConsumedCalories = foodData.reduce(
       (total: number, food: any) => total + Number(food.calorie),
       0
@@ -35,7 +35,7 @@ const useAchievement = ({
 
     setConsumedCalories(totalConsumedCalories);
 
-    console.log("totalConsumedCalories", totalConsumedCalories);
+    console.log('totalConsumedCalories', totalConsumedCalories);
 
     const totalBurnedCalories = exerciseData.reduce(
       (total: number, exercise: any) => total + exercise.calories,
@@ -44,7 +44,7 @@ const useAchievement = ({
 
     setBurnedCalories(totalBurnedCalories);
 
-    console.log("burnedCalories", totalBurnedCalories);
+    console.log('burnedCalories', totalBurnedCalories);
 
     let newAchievement = 0;
 
@@ -61,7 +61,7 @@ const useAchievement = ({
     newAchievement = Math.min(newAchievement, 100);
 
     setAchievement(newAchievement);
-    console.log("계산된 달성률", newAchievement);
+    console.log('계산된 달성률', newAchievement);
     setLoading(false);
   }, [dailyCalories, foodData, exerciseData]);
 

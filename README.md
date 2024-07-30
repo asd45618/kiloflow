@@ -5,33 +5,41 @@ Kiloflow는 사용자들이 자신의 건강 목표를 효과적으로 관리하
 ## :eyes: 기능 시연
 >회원관리
 > + 회원가입 후 초기설정 테스트
+>   
 ![회원가입 후 초기설정 테스트](https://github.com/user-attachments/assets/86f79b5e-d8e1-4d25-a015-75f080f808a6)
 >
 > + 회원정보 수정
+>   
 ![회원정보 수정 테스트](https://github.com/user-attachments/assets/6ffac2f1-b66c-4319-850a-feccf965a09b)
 
 
 >식단 및 운동 관리
 > + 음식 등록
+>   
 ![음식등록](https://github.com/user-attachments/assets/2c29a9aa-3f9a-40d1-adc8-d442ea09671f)
 >
 > + 운동 등록
+>   
 ![운동등록](https://github.com/user-attachments/assets/6da8be26-be19-4870-84ab-cdfe6a363f00)
 
 
 >실시간 그룹 채팅
 > + 채팅방 생성
+>   
 ![채팅방 만들기 테스트](https://github.com/user-attachments/assets/acde7453-75f4-4ffe-93cd-1af28a293f2d)
 >
 > + 채팅방 참여(처음 참여하는 채팅방)
+>   
 ![채팅방 참여하기 - 처음 참여](https://github.com/user-attachments/assets/f31a0c8a-eb0c-4e63-ae13-e3650f0a2cf3)
 >
 > + 채팅방 참여(참여중인 채팅방)
+>   
 ![채팅방 참여하기 - 이미참여중인 채팅방](https://github.com/user-attachments/assets/56d05728-7267-4e07-8e13-3e814caa3ebc)
 
 
 >통계 시각화
 > + 일일, 주간, 월간 단위의 칼로리 소비 및 섭취 통계 시각화
+>   
 ![달성률 테스트](https://github.com/user-attachments/assets/fa40dc3e-23a9-4ea1-9796-df1e18566ef7)
 
 
